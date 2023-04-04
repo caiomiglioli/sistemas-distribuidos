@@ -34,11 +34,23 @@ def orchestra(client):
             if res:
                 u = res            
         
+        elif cmd[0] == 'EXIT':
+            handleExit(client)
+            break
+        
+        elif u == 'NãoLogado':
+            print('Comando não permitido.')
+
         elif cmd[0] == 'PWD':
             pwd = handlePwd(client)
         
         elif cmd[0] == 'CHDIR':
-            pass
+            if len(cmd) < 2:
+                print('Comando incompleto, tente: CHDIR <path>')
+                continue
+            p = handleChdir(client, cmd[1])
+            if p:
+                pwd = p
         
         elif cmd[0] == 'GETFILES':
             handleGetfiles(client)
@@ -46,9 +58,6 @@ def orchestra(client):
         elif cmd[0] == 'GETDIRS':
             handleGetdirs(client)
         
-        elif cmd[0] == 'EXIT':
-            handleExit(client)
-            break
         #fim tipo de mensagem 0
         #inicio tipo de mensagem 1
         else:
@@ -56,6 +65,21 @@ def orchestra(client):
 #end orchestra
 
 # ===========================================
+
+def handleChdir(client, path):
+    try:
+        req = '02' + path
+        client.send(req.encode('utf-8'))
+        res = client.recv(1024).decode('utf-8')
+
+        if res == 'SUCCESS':
+            return handlePwd(client)
+        else:
+            print('Não foi possível navegar ao diretório.')
+
+    except Exception as e:
+        return print(e)
+#end chdir
 
 def handlePwd(client):
     try:
