@@ -1,4 +1,5 @@
 import socket
+from hashlib import sha512
 
 def main():
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -25,8 +26,29 @@ def orchestra(client):
             break
         
         elif cmd[0] == 'CONNECT':
-            print('conectando...')
-        
+            if len(cmd) < 2:
+                print('Comando incompleto, tente: CONNECT <user>,<password>')
+                continue
+
+            user, password = cmd[1].split(',')
+            password = sha512(password.encode('utf-8')).hexdigest()
+            
+            # 0 = codigo de tipo de mensagem, 
+            req = '00' + user + '+' + password
+            res = None
+            try:
+                print('Conectando...')
+                client.send(req.encode('utf-8'))
+                res = client.recv(2048).decode('utf-8')
+                print('DEBUG res', res)
+            except:
+               raise Exception('Falha no login')
+
+            if res == 'SUCCESS':
+                print('Logado com sucesso!')
+            else:
+                print('Usuário ou senha incorreto.')
+
         else:
             print('Comando inválido!')
 #end orchestra
