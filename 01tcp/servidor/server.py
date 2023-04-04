@@ -1,5 +1,6 @@
 import threading
 import socket
+import os
 
 def main():
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -19,33 +20,50 @@ def main():
 def orchestra(client):
     print('cliente conectado')
     sessionUser = None
+    pwd = ''
     
     while True:
         try: 
             data = client.recv(2048).decode('utf-8')
             msgType = int(data[0])
             cmdId = int(data[1])
-            data = data[2:]
+            frame = data[2:]
 
-            #controle de acesso xd
-            if not sessionUser:
-                if msgType and cmdId:
-                    client.send("ERROR".encode('utf-8'))
-                    continue
+            # # controle de acesso xd
+            # if not sessionUser:
+            #     if not (msgType == 0 and cmdId == 0):
+            #         print('Usuário não logado')
+            #         client.send("ERROR".encode('utf-8'))
+            #         continue
 
             #msg de connect,pwd,chdir,etc...
             if msgType == 0:
                 match cmdId:
                     #connect
                     case 0:
-                        sessionUser = handleLogin(client, data)
+                        sessionUser = handleLogin(client, frame)
                         res = 'SUCCESS' if sessionUser else 'ERROR'
                         client.send(res.encode('utf-8'))
+                    
+                    case 1:
+                        handlePwd(client, pwd)
+                        pass
 
-                    # case x:
-                    #     sessionUser = None
-                    #     client.close()
-                    #     return print('Cliente desconectado.')
+                    case 2:
+                        #chdir
+                        pass
+
+                    case 3:
+                        handleGetfd(client, 'f', pwd)
+                        pass
+
+                    case 4:
+                        handleGetfd(client, 'd', pwd)
+
+                    case 5:
+                        sessionUser = None
+                        client.close()
+                        return print('Cliente desconectado.')
             
             #msg de getfile, addfile etc...
             elif msgType == 1:
@@ -65,6 +83,26 @@ def orchestra(client):
     print('cliente perdeu a conexão')
     client.close()
 #end orchestra
+
+# =========================================
+def handlePwd(client, pwd):
+    p = '/' + pwd
+    client.send( p.encode('utf-8') )
+#end pwd
+
+def handleGetfd(client, type, pwd):
+    items = []
+    for (dirpath, dirnames, filenames) in os.walk('./files/' + pwd):
+        i = dirnames if type == 'd' else filenames 
+        items.extend(i)
+        break
+
+    client.send( len(items).to_bytes(4, 'big', signed=False) )
+
+    for item in items:
+        client.send( len(item).to_bytes(4, 'big', signed=False) )
+        client.send( item.encode('utf-8') )
+#end getdirs
 
 def handleLogin(client, data):
     user, password = data.split('+')
