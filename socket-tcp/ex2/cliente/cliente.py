@@ -30,9 +30,9 @@ def orchestra(client):
         elif cmd[0] == 'EXIT':
             # handleExit(client)
             break
+#end orchestra
 
-
-
+# ===================================
 def sendReq(client, cmdId, fileName):
     msgType = 1
     fSize = len(fileName)
@@ -41,34 +41,38 @@ def sendReq(client, cmdId, fileName):
     req += fSize.to_bytes(1, 'big', signed=False)
     req += bytes(fileName, 'utf-8')
     client.send(req)
+#end sendreq
 
 def handleGFL(client):
     try:
         data = client.recv(5)
-        # data = int.from_bytes(data, 'big', signed=False)
 
         msgType = data[0]
         cmdId = data[1]
         sCode = data[2]
-        nFile = int.from_bytes(data[3:4], 'big', signed=False)
+        nFiles = int.from_bytes(data[3:5], 'big', signed=False)
 
-        # if res == 'E':
-        #     print('Houve um erro ao tentar buscar os diretórios.')
-        # if res == 0:
-        #     print('Não há diretórios no diretório corrente.')
-        # elif res >= 1:
-        #     print(f'Mostrando {res} diretórios:')
-        #     for i in range(res):
-        #         size = client.recv(4)
-        #         size = int.from_bytes(size, 'big', signed=False)
-        #         dir = client.recv(size).decode('utf-8')
-        #         print(f'  * {dir}')
-        # else:
-        #     print('Resposta não reconhecida.')
-        print(msgType, cmdId, sCode, nFile)
+        if sCode == '2':
+            return print('Houve um erro ao tentar buscar os arquivos.')
+
+        if nFiles == 0:
+            print('Não há arquivos disponíveis.')
+        elif nFiles >= 1:
+            print(f'Mostrando {nFiles} arquivos:')
+            for i in range(nFiles):
+                # data = client.recv(256)
+                # print('data ->', data)
+                # size = data[0]
+                # name = data[1:(1+size)].decode('utf-8')
+                size = client.recv(1)[0]
+                name = client.recv(size).decode('utf-8')
+                print(f'  * {name}')
+        else:
+            print('Resposta não reconhecida.')
+
+        # print(msgType, cmdId, sCode, nFiles)
     except Exception as e:
         return print(e)
-
-
-main() 
-#end orchestra
+#end gfl
+# ===================================
+main()

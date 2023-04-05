@@ -23,23 +23,19 @@ def orchestra(client):
     while True:
         try: 
             data = client.recv(258)
-            msgType = data[0]
-            cmdId = data[1]
-            fSize = data[2]
             # msgType = int.from_bytes(data[0], 'big', signed=False)
             # cmdId = int.from_bytes(data[1], 'big', signed=False)
             # fSize = int.from_bytes(data[2], 'big', signed=False)
-            fileName = data[3:].decode('utf-8')
+            msgType = data[0]
+            cmdId = data[1]
+            fSize = data[2]
+            fileName = data[3:(3+fSize)].decode('utf-8')
+
             print(msgType, cmdId, fSize, fileName)
-            print(data)
 
             match cmdId:
                 case 3:
-                    x = b'\x01\x03\x03'
-                    y = 5
-                    x += y.to_bytes(2, 'big', signed=False)
-                    client.send(x)
-                    continue
+                    handleGFL(client)
 
             
 
@@ -54,5 +50,33 @@ def orchestra(client):
 
     print('cliente perdeu a conexão')
     client.close()
+#end orchestra
 
+# ===================================
+def sendRes(client, cmdId, res):
+    mType = int(2).to_bytes(1, 'big', signed=False)
+    cmdId = cmdId.to_bytes(1, 'big', signed=False)
+    sCode = int(1 if res else 2).to_bytes(1, 'big', signed=False)
+    r = mType + cmdId + sCode + res
+    client.send(r)
+#end res
+
+def handleGFL(client):
+    #get files
+    files = []
+    for (dirpath, dirnames, filenames) in os.walk('./files/'):
+        files.extend(filenames)
+        break
+    
+    #enviar quantidade de arquivos
+    res = len(files).to_bytes(2, 'big', signed=False)
+    sendRes(client, 3, res)
+
+    #enviar o nome de cada arquivo
+    for f in files:
+        client.send(len(f).to_bytes(1, 'big', signed=False))
+        client.send(f.encode('utf-8'))
+        # client.send(frame)
+#end gfl
+# ===================================
 main()
