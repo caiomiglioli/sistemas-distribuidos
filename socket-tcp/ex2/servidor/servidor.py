@@ -34,10 +34,10 @@ def orchestra(client):
             print(msgType, cmdId, fSize, fileName)
 
             match cmdId:
+                case 2:
+                    handleDelete(client, fileName)
                 case 3:
-                    handleGFL(client)
-
-            
+                    handleGFL(client)           
 
 
         except Exception as e:
@@ -53,13 +53,24 @@ def orchestra(client):
 #end orchestra
 
 # ===================================
-def sendRes(client, cmdId, res):
+def sendRes(client, cmdId, success=False, frame=None):
     mType = int(2).to_bytes(1, 'big', signed=False)
     cmdId = cmdId.to_bytes(1, 'big', signed=False)
-    sCode = int(1 if res else 2).to_bytes(1, 'big', signed=False)
-    r = mType + cmdId + sCode + res
+    sCode = int(1 if success else 2).to_bytes(1, 'big', signed=False)
+    r = mType + cmdId + sCode
+    if frame:
+        r += frame
+
     client.send(r)
 #end res
+
+def handleDelete(client, filename):
+    try:
+        os.remove('./files/' + filename)
+        sendRes(client, 2, True)
+    except:
+        sendRes(client, 2, False)
+#end delete
 
 def handleGFL(client):
     #get files
@@ -69,8 +80,8 @@ def handleGFL(client):
         break
     
     #enviar quantidade de arquivos
-    res = len(files).to_bytes(2, 'big', signed=False)
-    sendRes(client, 3, res)
+    frame = len(files).to_bytes(2, 'big', signed=False)
+    sendRes(client, 3, True, frame)
 
     #enviar o nome de cada arquivo
     for f in files:

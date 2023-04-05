@@ -21,11 +21,14 @@ def orchestra(client):
         cmd = input('>> ').split(' ')
         cmd[0] = cmd[0].upper()
 
-        
-
         if cmd[0] == 'GETFILESLIST':
-            sendReq(client, 3, '')
             handleGFL(client)
+
+        elif cmd[0] == 'DELETE':            
+            if len(cmd) < 2:
+                print('Comando incompleto, tente: DELETE <filename>')
+                continue
+            handleDelete(client, cmd[1])
 
         elif cmd[0] == 'EXIT':
             # handleExit(client)
@@ -43,8 +46,26 @@ def sendReq(client, cmdId, fileName):
     client.send(req)
 #end sendreq
 
+def handleDelete(client, filename):
+    sendReq(client, 2, filename)
+    data = client.recv(3)
+    mType = data[1]
+    cmdId = data[2]
+    sCode = data[2]
+
+    if cmdId != 2 and mType != 2:
+        return print('Houve um erro na operação.')
+    
+    if sCode == 1:
+        print(f'Arquivo "{filename}" excluído com sucesso!')
+    else:
+        print('Houve um erro ao tentar excluir o arquivo.')
+
+#end delete
+
 def handleGFL(client):
     try:
+        sendReq(client, 3, '')
         data = client.recv(5)
 
         msgType = data[0]
@@ -75,4 +96,5 @@ def handleGFL(client):
         return print(e)
 #end gfl
 # ===================================
+
 main()
