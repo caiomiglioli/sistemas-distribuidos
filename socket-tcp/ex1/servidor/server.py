@@ -92,6 +92,7 @@ def handleChdir(client, path, pwd):
         fullPath = getFullPath(pwd, path)
 
     dirExiste = None
+    #if os.path.exists("demofile.txt"):
     for (dirpath, dirnames, filenames) in os.walk('./files/' + fullPath):
         dirExiste = True
         break

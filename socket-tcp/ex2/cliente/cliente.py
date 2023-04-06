@@ -1,4 +1,5 @@
 import socket
+import os
 
 def main():
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -30,21 +31,53 @@ def orchestra(client):
                 continue
             handleDelete(client, cmd[1])
 
+        elif cmd[0] == 'ADDFILE':
+            if len(cmd) < 2:
+                print('Comando incompleto, tente: ADDFILE <filename>')
+                continue
+            handleUpload(client, cmd[1])
+
         elif cmd[0] == 'EXIT':
             # handleExit(client)
             break
 #end orchestra
 
 # ===================================
-def sendReq(client, cmdId, fileName):
+def sendReq(client, cmdId, fileName, frame=None):
     msgType = 1
     fSize = len(fileName)
     req = msgType.to_bytes(1, 'big', signed=False)
     req += cmdId.to_bytes(1, 'big', signed=False)
     req += fSize.to_bytes(1, 'big', signed=False)
     req += bytes(fileName, 'utf-8')
+    if frame:
+        req += frame
     client.send(req)
 #end sendreq
+
+def handleUpload(client, filename):
+    try:
+        with open(filename, "rb") as f:
+            fSize = os.stat(filename).st_size
+            sendReq(client, 1, filename, fSize.to_bytes(4, 'big', signed=False))
+
+            res = client.recv(3)
+            status = res[2]
+
+            if status == 1:
+                for i in range(fSize):
+                    byte = f.read(1)
+                    client.send(byte)
+                
+                res = client.recv(3)
+                if res[2] == 1:
+                    print('Arquivo enviado com sucesso!')
+                else:
+                    print('Erro ao fazer upload do arquivo. Tente novamente.')
+    except Exception as e:
+        print('Não foi possível abrir o arquivo.')
+        return print(e)
+#end upload
 
 def handleDelete(client, filename):
     sendReq(client, 2, filename)

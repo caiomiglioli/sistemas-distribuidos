@@ -23,17 +23,27 @@ def orchestra(client):
     while True:
         try: 
             data = client.recv(258)
+
+            if not data: 
+                break
+
             # msgType = int.from_bytes(data[0], 'big', signed=False)
             # cmdId = int.from_bytes(data[1], 'big', signed=False)
             # fSize = int.from_bytes(data[2], 'big', signed=False)
             msgType = data[0]
             cmdId = data[1]
-            fSize = data[2]
-            fileName = data[3:(3+fSize)].decode('utf-8')
+            fnSize = data[2]
+            fileName = data[3:(3+fnSize)].decode('utf-8')
+            if cmdId == 1:
+                frame = data[(3+fnSize):(3+fnSize)+5]
+                # print(frame)
 
-            print(msgType, cmdId, fSize, fileName)
+            # print(msgType, cmdId, fnSize, fileName)
 
             match cmdId:
+                case 1:
+                    frame = int.from_bytes(frame, 'big', signed=False)
+                    handleUpload(client, fileName, frame)
                 case 2:
                     handleDelete(client, fileName)
                 case 3:
@@ -43,9 +53,6 @@ def orchestra(client):
         except Exception as e:
             print(e)
             print("cannot receive data")
-            break
-
-        if not data: 
             break
 
     print('cliente perdeu a conexão')
@@ -63,6 +70,23 @@ def sendRes(client, cmdId, success=False, frame=None):
 
     client.send(r)
 #end res
+
+def handleUpload(client, filename, fSize):
+    allowed = False if os.path.exists('./files/' + filename) else True
+    sendRes(client, 1, allowed)
+
+    if allowed:
+        with open('./files/' + filename, "wb") as f:
+            for i in range(fSize):
+                byte = client.recv(1)
+                f.write(byte)
+        print(f'receber arquivo {filename} ({fSize} bytes)')
+
+        chksum = True if os.stat('./files/' + filename).st_size == fSize else False
+        sendRes(client, 1, chksum)
+        if not chksum:
+            os.remove('./files/' + filename)
+#end upload
 
 def handleDelete(client, filename):
     try:
@@ -90,4 +114,6 @@ def handleGFL(client):
         # client.send(frame)
 #end gfl
 # ===================================
+
+
 main()
