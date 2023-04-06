@@ -1,5 +1,6 @@
 import socket
 import os
+import time
 
 def main():
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -37,6 +38,12 @@ def orchestra(client):
                 continue
             handleUpload(client, cmd[1])
 
+        elif cmd[0] == 'GETFILE':
+            if len(cmd) < 2:
+                print('Comando incompleto, tente: GETFILE <filename>')
+                continue
+            handleDownload(client, cmd[1])
+
         elif cmd[0] == 'EXIT':
             # handleExit(client)
             break
@@ -54,6 +61,26 @@ def sendReq(client, cmdId, fileName, frame=None):
         req += frame
     client.send(req)
 #end sendreq
+
+def handleDownload(client, filename):
+    sendReq(client, 4, filename)
+
+    data = client.recv(3)
+    status = data[2]
+    
+    if status == 1:
+        duplicated = '%d'%time.time() if os.path.exists('./downloads/' + filename) else ''
+        fSize = int.from_bytes(client.recv(4), 'big', signed=False)
+        
+        with open('./downloads/' + filename + duplicated, "wb") as f:
+            for i in range(fSize):
+                byte = client.recv(1)
+                f.write(byte)
+
+        print(f'Download do arquivo {filename} ({fSize} bytes) concluído')
+    else:
+        print('Arquivo inexistente no servidor.')
+#end download
 
 def handleUpload(client, filename):
     try:

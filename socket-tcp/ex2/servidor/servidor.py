@@ -47,7 +47,9 @@ def orchestra(client):
                 case 2:
                     handleDelete(client, fileName)
                 case 3:
-                    handleGFL(client)           
+                    handleGFL(client)
+                case 4:
+                    handleDownload(client, fileName)
 
 
         except Exception as e:
@@ -70,6 +72,20 @@ def sendRes(client, cmdId, success=False, frame=None):
 
     client.send(r)
 #end res
+
+def handleDownload(client, filename):
+    allowed = True if os.path.exists('./files/' + filename) else False
+
+    if allowed:
+        with open('./files/' + filename, "rb") as f:
+            fSize = os.stat('./files/' + filename).st_size
+            sendRes(client, 1, True, fSize.to_bytes(4, 'big', signed=False))
+            for i in range(fSize):
+                byte = f.read(1)
+                client.send(byte)
+    else:
+        sendRes(client, 1, False)
+#end download
 
 def handleUpload(client, filename, fSize):
     allowed = False if os.path.exists('./files/' + filename) else True
