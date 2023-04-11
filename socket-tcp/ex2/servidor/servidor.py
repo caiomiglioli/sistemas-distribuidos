@@ -1,3 +1,32 @@
+"""
+Este código implementa a parte servidor de um programa cliente/servidor
+de armazenamento de arquivos que utiliza sockets TCP e protocolo em bytes
+para comunicação.
+
+Protocolo:
+
+ - Solicitações:
+          1 byte        1 byte           1 byte               [0 a 255] Bytes
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    | Message Type | Command Ident. | Filename Size |            Filename           |
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+ - Respostas:
+          1 byte        1 byte           1 byte
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    | Message Type | Command Ident. |  Status Code  |
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    
+    + Adições (Vide PDF do enunciado)
+
+Autores:
+ - Caio Miglioli @caiomiglioli
+ - Ryan Lazaretti @ryanramos01
+
+Data de Criação: 5 de Abril de 2023
+Ultima alteração: 11 de Abril de 2023
+"""
+
 import threading
 import socket
 import os
@@ -18,6 +47,14 @@ def main():
 #end main
 
 def orchestra(client):
+    """
+    Função responsável por orquestrar os comandos recebidos do cliente,
+    chamando as funções corretas baseadas no código do comando recebido
+    no pacote do cliente.
+
+    Esta função é executada em uma thread separada para cada usuário conectado.
+    Recebe um socket 'Client' como argumento.
+    """
     print('cliente conectado')
 
     while True:
@@ -63,6 +100,11 @@ def orchestra(client):
 
 # ===================================
 def sendRes(client, cmdId, success=False, frame=None):
+    """
+    Função responsável por enviar as respostas no protocolo correto.
+    Recebe o socket 'client', o tipo do comando, e se houve sucesso para que se possa
+    enviar o Status Code. E por fim o Frame, item adicional que será adicionado somente se houver conteúdo.
+    """
     mType = int(2).to_bytes(1, 'big', signed=False)
     cmdId = cmdId.to_bytes(1, 'big', signed=False)
     sCode = int(1 if success else 2).to_bytes(1, 'big', signed=False)
@@ -74,6 +116,13 @@ def sendRes(client, cmdId, success=False, frame=None):
 #end res
 
 def handleDownload(client, filename):
+    """
+    Função responsável por realizar o envio dos arquivos do servidor para o cliente.
+    Recebe o socket 'client' e o nome do arquivo.
+
+    Checa se o arquivo existe e se sim, pega seu tamanho e coloca como frame, para o envio de resposta ao cliente.
+    Logo em seguida envia byte a byte o arquivo (dessa vez sem seguir protocolo, enviando apenas o byte)
+    """
     allowed = True if os.path.exists('./files/' + filename) else False
 
     if allowed:
@@ -88,6 +137,14 @@ def handleDownload(client, filename):
 #end download
 
 def handleUpload(client, filename, fSize):
+    """
+    Função responsável por realizar o recebimento dos arquivos do cliente para o servidor.
+    Recebe o socket 'client', o nome do arquivo 'filename', e o tamanho do arquivo 'fSize.
+
+    Primeiro é checado se um arquivo com o mesmo nome já existe. Caso não, é enviado uma resposta
+    dizendo que está tudo certo para o envio.
+    Logo em seguida, é recebido byte a byte o arquivo.
+    """
     allowed = False if os.path.exists('./files/' + filename) else True
     sendRes(client, 1, allowed)
 
@@ -96,15 +153,16 @@ def handleUpload(client, filename, fSize):
             for i in range(fSize):
                 byte = client.recv(1)
                 f.write(byte)
-        print(f'receber arquivo {filename} ({fSize} bytes)')
+        print(f'recebendo arquivo {filename} ({fSize} bytes)')
 
-        chksum = True if os.stat('./files/' + filename).st_size == fSize else False
-        sendRes(client, 1, chksum)
-        if not chksum:
-            os.remove('./files/' + filename)
+        sendRes(client, 1, 'SUCCESS')
 #end upload
 
 def handleDelete(client, filename):
+    """
+    Função responsável por realizar a exclusão dos arquivos.
+    Recebe o socket 'client', e o nome do arquivo 'filename'.
+    """
     try:
         os.remove('./files/' + filename)
         sendRes(client, 2, True)
@@ -113,6 +171,12 @@ def handleDelete(client, filename):
 #end delete
 
 def handleGFL(client):
+    """
+    Função responsável por enviar a lista de arquivos ao cliente.
+    Recebe o socket 'client'.
+
+    É enviado em frame a quantidade de arquivos. E para cada arquivo é enviado o tamanho de seu nome, e seu nome.
+    """
     #get files
     files = []
     for (dirpath, dirnames, filenames) in os.walk('./files/'):

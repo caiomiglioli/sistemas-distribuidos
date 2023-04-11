@@ -1,3 +1,32 @@
+"""
+Este código implementa a parte cliente de um programa cliente/servidor
+de armazenamento de arquivos que utiliza sockets TCP e protocolo em bytes
+para comunicação.
+
+Protocolo:
+
+ - Solicitações:
+          1 byte        1 byte           1 byte               [0 a 255] Bytes
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    | Message Type | Command Ident. | Filename Size |            Filename           |
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+ - Respostas:
+          1 byte        1 byte           1 byte
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    | Message Type | Command Ident. |  Status Code  |
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    
+    + Adições (Vide PDF do enunciado)
+
+Autores:
+ - Caio Miglioli @caiomiglioli
+ - Ryan Lazaretti @ryanramos01
+
+Data de Criação: 5 de Abril de 2023
+Ultima alteração: 5 de Abril de 2023
+"""
+
 import socket
 import os
 import time
@@ -16,6 +45,10 @@ def main():
 #end main
 
 def orchestra(client):
+    """
+    Função responsável por simular o funcionamento de um terminal bash, recebendo
+    comandos do usuário e chamando as funções responsáveis por tratar cada comando.
+    """
     pwd = '/'
     u = 'NãoLogado'
 
@@ -50,7 +83,12 @@ def orchestra(client):
 #end orchestra
 
 # ===================================
-def sendReq(client, cmdId, fileName, frame=None):
+def sendReq(client, cmdId, fileName='', frame=None):
+    """
+    Função responsável por enviar as requisições no protocolo correto.
+    Recebe o socket 'client', o tipo do comando 'cmdId', opcionalmente o nome do arquivo e um dataframe contendo
+    informações específicas para cada uso (como tamanho do arquivo em ADDFILE)
+    """
     msgType = 1
     fSize = len(fileName)
     req = msgType.to_bytes(1, 'big', signed=False)
@@ -63,6 +101,14 @@ def sendReq(client, cmdId, fileName, frame=None):
 #end sendreq
 
 def handleDownload(client, filename):
+    """
+    Função responsável por realizar o recebimento dos arquivos do servidor para o cliente.
+    Recebe o socket 'client', o nome do arquivo 'filename'.
+
+    Primeiro é enviado a requisição e aguardado a resposta para poder iniciar o download.
+    Caso seja permitido, é recebido o tamanho do arquivo, e então em um loop de 0 até o tamanho é
+    recebido byte a byte e escrito no arquivo na pasta ./downloads/ 
+    """
     sendReq(client, 4, filename)
 
     data = client.recv(3)
@@ -83,6 +129,15 @@ def handleDownload(client, filename):
 #end download
 
 def handleUpload(client, filename):
+    """
+    Função responsável por realizar o envio dos arquivos do cliente para o servidor.
+    Recebe o socket 'client', o nome do arquivo 'filename'.
+
+    Primeiro é enviado a requisição contendo o nome do arquivo e seu tamanho e aguardado a resposta
+    para poder iniciar o envio.
+    Caso seja permitido, o arquivo é enviado byte a byte em um loop de 0 até o tamanho do arquivo e ao
+    final é aguardado a resposta do servidor para saber se o arquivo foi recebido com sucesso.
+    """
     try:
         with open(filename, "rb") as f:
             fSize = os.stat(filename).st_size
@@ -107,6 +162,10 @@ def handleUpload(client, filename):
 #end upload
 
 def handleDelete(client, filename):
+    """
+    Função responsável por realizar a exclusão dos arquivos.
+    Recebe o socket 'client', e o nome do arquivo 'filename'.
+    """
     sendReq(client, 2, filename)
     data = client.recv(3)
     mType = data[1]
@@ -124,8 +183,17 @@ def handleDelete(client, filename):
 #end delete
 
 def handleGFL(client):
+    """
+    Função responsável por receber a lista de arquivos do servidor.
+    Recebe o socket 'client'.
+
+    Após enviado a requisição, é recebido uma resposta com um frame adicional contendo a quantidade de
+    arquivos no servidor.
+    Em seguida, em um loop de 0 até a quantidade de arquivos, para cada arquivo é recebido o tamanho
+    de seu nome, e logo após, seu nome.
+    """
     try:
-        sendReq(client, 3, '')
+        sendReq(client, 3)
         data = client.recv(5)
 
         msgType = data[0]
@@ -141,10 +209,6 @@ def handleGFL(client):
         elif nFiles >= 1:
             print(f'Mostrando {nFiles} arquivos:')
             for i in range(nFiles):
-                # data = client.recv(256)
-                # print('data ->', data)
-                # size = data[0]
-                # name = data[1:(1+size)].decode('utf-8')
                 size = client.recv(1)[0]
                 name = client.recv(size).decode('utf-8')
                 print(f'  * {name}')

@@ -1,3 +1,16 @@
+"""
+Este código implementa a parte cliente de um programa cliente/servidor
+de gerenciamento de arquivos que utiliza sockets TCP e formato string
+utf-8 para comunicação.
+
+Autores:
+ - Caio Miglioli @caiomiglioli
+ - Ryan Lazaretti @ryanramos01
+
+Data de Criação: 3 de Abril de 2023
+Ultima alteração: 4 de Abril de 2023
+"""
+
 import socket
 from hashlib import sha512
 
@@ -18,6 +31,10 @@ def main():
 #end main
 
 def orchestra(client):
+    """
+    Função responsável por simular o funcionamento de um terminal bash, recebendo
+    comandos do usuário e chamando as funções responsáveis por tratar cada comando.
+    """
     pwd = '/'
     u = 'NãoLogado'
 
@@ -67,8 +84,13 @@ def orchestra(client):
 # ===========================================
 
 def handleChdir(client, path):
+    """
+    Função responsável por tratar o comando de troca de diretório no servidor.
+    Recebe como argumentos o socket 'Client' e o caminho 'path' em que se deseja navegar.
+    Em caso de sucesso retorna o novo caminho para que se possa exibir no bash.
+    """
     try:
-        req = '02' + path
+        req = '02' + path # código do comando + dataframe
         client.send(req.encode('utf-8'))
         res = client.recv(1024).decode('utf-8')
 
@@ -82,6 +104,11 @@ def handleChdir(client, path):
 #end chdir
 
 def handlePwd(client):
+    """
+    Função responsável por tratar o comando para saber o caminho do diretório atual.
+    Recebe como argumentos o socket 'Client' e em caso de sucesso retorna o caminho
+    para que se possa exibir no bash.
+    """
     try:
         client.send('01'.encode('utf-8'))
         res = client.recv(2048).decode('utf-8')
@@ -93,6 +120,14 @@ def handlePwd(client):
 #end pwd    
 
 def handleGetfiles(client):
+    """
+    Função responsável por tratar o comando que exibe os arquivos do diretório atual.
+    Recebe como argumentos o socket 'Client'.
+
+    É enviado o código do comando, recebido a quantidade de arquivos, e depois em um
+    laço de 0 até a quantidade recebida, em cada iteração é recebido o tamanho do nome 
+    de um arquivo e logo em seguida seu nome.
+    """
     try:
         client.send('03'.encode('utf-8'))
         res = client.recv(4)
@@ -116,6 +151,14 @@ def handleGetfiles(client):
 #end getfiles
 
 def handleGetdirs(client):
+    """
+    Função responsável por tratar o comando que exibe os diretórios contidos no diretório atual.
+    Recebe como argumentos o socket 'Client'.
+
+    É enviado o código do comando, recebido a quantidade de diretórios, e depois em um
+    laço de 0 até a quantidade recebida, em cada iteração é recebido o tamanho do nome 
+    de um diretório e logo em seguida seu nome.
+    """
     try:
         client.send('04'.encode('utf-8'))
         res = client.recv(4)
@@ -139,6 +182,10 @@ def handleGetdirs(client):
 #end getdirs
 
 def handleExit(client):
+    """
+    Envia um sinal para que o servidor feche o socket.
+    Fecha o socket local. (O terminal é fechado na função 'orchestra')
+    """
     req = '05'
     try:
         client.send(req.encode('utf-8'))
@@ -149,6 +196,14 @@ def handleExit(client):
 #end exit
 
 def handleLogin(client, data):
+    """
+    Função responsável por tratar o comando de login.
+    Recebe como argumentos o socket 'Client' e a string 'nome,senha' em 'data'.
+    Em caso de sucesso, retorna o usuário para exibição no terminal.
+    
+    É enviado o código do comando, o usuário, o divisor (+) e a senha criptografada
+    em sha512.
+    """
     user, password = data.split(',')
     password = sha512(password.encode('utf-8')).hexdigest()
             
