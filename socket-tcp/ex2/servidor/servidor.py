@@ -30,9 +30,11 @@ Ultima alteração: 11 de Abril de 2023
 import threading
 import socket
 import os
+import logging
 
 def main():
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    logging.basicConfig(filename='server.log', encoding='utf-8', level=logging.DEBUG, format='%(asctime)s: %(levelname)s: %(message)s')
     
     try:
         server.bind(('localhost', 7777))
@@ -42,11 +44,11 @@ def main():
 
     while True:
         client, ip = server.accept()
-        thread = threading.Thread(target=orchestra, args=[client])
+        thread = threading.Thread(target=orchestra, args=[client, ip])
         thread.start()
 #end main
 
-def orchestra(client):
+def orchestra(client, ip):
     """
     Função responsável por orquestrar os comandos recebidos do cliente,
     chamando as funções corretas baseadas no código do comando recebido
@@ -55,7 +57,7 @@ def orchestra(client):
     Esta função é executada em uma thread separada para cada usuário conectado.
     Recebe um socket 'Client' como argumento.
     """
-    print('cliente conectado')
+    log('INFO', f'cliente {ip} conectado')
 
     while True:
         try: 
@@ -80,13 +82,29 @@ def orchestra(client):
             match cmdId:
                 case 1:
                     frame = int.from_bytes(frame, 'big', signed=False)
-                    handleUpload(client, fileName, frame)
+                    if handleUpload(client, fileName, frame):
+                        #como o log foi feito por ultimo (pq foi esquecido haha) acabou que essa gambiarra foi feita pra resolver
+                        #isso era melhor que passar o ip para cada função, mas o correto é utilizar Classe no código e guardar o client e o ip
+                        #em variaveis estaticas, da classe.
+                        log('INFO', f'Cliente {ip} fez o upload do arquivo {fileName}.')
+                    else:
+                        log('ERROR', f'Cliente {ip} falhou ao realizar o download do arquivo {fileName}.')
+                    
                 case 2:
-                    handleDelete(client, fileName)
+                    if handleDelete(client, fileName):
+                        log('INFO', f'Cliente {ip} excluiu o arquivo {fileName}.')
+                    else:
+                        log('ERROR', f'Cliente {ip} falhou ao excluir o arquivo {fileName}.')
+
                 case 3:
                     handleGFL(client)
+                    log('INFO', f'Cliente {ip} listou os arquivos do servidor.')
+
                 case 4:
-                    handleDownload(client, fileName)
+                    if handleDownload(client, fileName):
+                        log('INFO', f'Cliente {ip} fez o download do arquivo {fileName}.')
+                    else:
+                        log('ERROR', f'Cliente {ip} falhou ao realizar o download do arquivo {fileName}.')
 
 
         except Exception as e:
@@ -94,7 +112,7 @@ def orchestra(client):
             print("cannot receive data")
             break
 
-    print('cliente perdeu a conexão')
+    log('INFO', f'cliente {ip} desconectado')
     client.close()
 #end orchestra
 
@@ -132,8 +150,10 @@ def handleDownload(client, filename):
             for i in range(fSize):
                 byte = f.read(1)
                 client.send(byte)
-    else:
-        sendRes(client, 1, False)
+        return True
+    
+    sendRes(client, 1, False)
+    return False
 #end download
 
 def handleUpload(client, filename, fSize):
@@ -156,6 +176,8 @@ def handleUpload(client, filename, fSize):
         print(f'recebendo arquivo {filename} ({fSize} bytes)')
 
         sendRes(client, 1, 'SUCCESS')
+        return True
+    return False
 #end upload
 
 def handleDelete(client, filename):
@@ -166,8 +188,10 @@ def handleDelete(client, filename):
     try:
         os.remove('./files/' + filename)
         sendRes(client, 2, True)
+        return True
     except:
         sendRes(client, 2, False)
+        return False
 #end delete
 
 def handleGFL(client):
@@ -193,6 +217,13 @@ def handleGFL(client):
         client.send(f.encode('utf-8'))
         # client.send(frame)
 #end gfl
+# ===================================
+
+def log(type, msg):
+    if type == 'INFO':
+        logging.info(msg)
+    elif type == 'ERROR':
+        logging.error(msg)
 # ===================================
 
 
