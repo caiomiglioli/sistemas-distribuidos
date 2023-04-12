@@ -98,7 +98,6 @@ def dataBuilder(message, nickName):
         typeMessage = NORMAL_MESSAGE
 
     # Cria o cabeçalho no formato do enunciado.
-    print(typeMessage)
     data = typeMessage.to_bytes(1, "big")
     data += len(nickName).to_bytes(1, "big")
     data += bytes(nickName, "utf-8")
