@@ -1,9 +1,31 @@
 """
-    1 byte         4 bytes            1 byte               0-254 bytes
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
-|   Command   |   File Size   |      Filename Size      |    Filename    |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
+Este código implementa a parte do servidor de um programa cliente servidor que
+utiliza o protocolo UDP para comunicação para realizar upload de arquivos.
 
+As requisições são feitas seguindo o protocolo:
+
+    1 byte         4 bytes            1 byte                 0-254 bytes
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   Command   |   File Size   |      Filename Size      |     Filename    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+Para o upload:
+    1 - Requisição é feita pelo cliente
+    2 - Resposta do servidor de 1 byte para confirmação
+    3 - Envio do cliente de pacotes contendo bytes do arquivo seguindo o seguinte protocolo:
+        +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+        | Numero de ordem do pacote (4bytes)  | Bytes do arquivo (0 a 1024 bytes) |
+        +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    4 - Envio do cliente de um pacote contendo 40 bytes com o SHA-1 do checksum
+    5 - Resposta do servidor de 1 byte para resultado da comparação do checksum
+
+
+Autores:
+ - Caio Miglioli @caiomiglioli
+ - Ryan Lazaretti @ryanramos01
+
+Data de Criação: 18 de Abril de 2023
+Ultima alteração: 18 de Abril de 2023    
 """
 
 import socket

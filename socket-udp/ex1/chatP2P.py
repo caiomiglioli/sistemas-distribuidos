@@ -1,3 +1,14 @@
+"""
+Este código implementa um chat P2P que utiliza sockets UDP para comunicação.
+
+Autores:
+ - Ryan Lazaretti @ryanramos01
+ - Caio Miglioli @caiomiglioli
+
+Data de Criação: 11 de Abril de 2023
+Ultima alteração: 11 de Abril de 2023
+"""
+
 import socket
 import threading
 import re
