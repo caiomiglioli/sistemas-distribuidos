@@ -1,0 +1,28 @@
+https://protobuf.dev/getting-started/pythontutorial/
+
+syntax = "proto2";
+
+package teste;
+
+message Command {
+    string cmd = 1;
+}
+
+message Movie {
+    string plot = 1;
+    repeated string genres = 2;
+    int32 runtime = 3;
+    string rated = 4;
+    repeated string cast = 5;
+    string poster = 6;
+    string title = 7;
+    string fullplot = 8;
+    repeated string countries = 9;
+    repeated string directors = 10;
+    repeated string writers = 11;
+    int32 year = 12
+}
+
+message MoviesList {
+    repeated Movie movies = 1;
+}

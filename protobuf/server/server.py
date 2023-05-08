@@ -30,8 +30,6 @@ def orchestra(client):
     """
 
     print('cliente conectado')
-    sessionUser = None
-    pwd = ''
     
     while True:
         try: 
