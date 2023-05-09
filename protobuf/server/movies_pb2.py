@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x0cmovies.proto\"$\n\x07\x43ommand\x12\x0b\n\x03\x63md\x18\x01 \x01(\t\x12\x0c\n\x04\x61rgs\x18\x02 \x03(\t\"\xd5\x01\n\x05Movie\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04plot\x18\x02 \x01(\t\x12\x0e\n\x06genres\x18\x03 \x03(\t\x12\x0f\n\x07runtime\x18\x04 \x01(\x05\x12\r\n\x05rated\x18\x05 \x01(\t\x12\x0c\n\x04\x63\x61st\x18\x06 \x03(\t\x12\x0e\n\x06poster\x18\x07 \x01(\t\x12\r\n\x05title\x18\x08 \x01(\t\x12\x10\n\x08\x66ullplot\x18\t \x01(\t\x12\x11\n\tcountries\x18\n \x03(\t\x12\x11\n\tdirectors\x18\x0b \x03(\t\x12\x0f\n\x07writers\x18\x0c \x03(\t\x12\x0c\n\x04year\x18\r \x01(\x05\"$\n\nMoviesList\x12\x16\n\x06movies\x18\x01 \x03(\x0b\x32\x06.Movieb\x06proto3'
+  serialized_pb=b'\n\x0cmovies.proto\"$\n\x07\x43ommand\x12\x0b\n\x03\x63md\x18\x01 \x01(\t\x12\x0c\n\x04\x61rgs\x18\x02 \x03(\t\"\xf6\x01\n\x05Movie\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04plot\x18\x02 \x01(\t\x12\x0e\n\x06genres\x18\x03 \x03(\t\x12\x0f\n\x07runtime\x18\x04 \x01(\x05\x12\r\n\x05rated\x18\x05 \x01(\t\x12\x0c\n\x04\x63\x61st\x18\x06 \x03(\t\x12\x0e\n\x06poster\x18\x07 \x01(\t\x12\r\n\x05title\x18\x08 \x01(\t\x12\x10\n\x08\x66ullplot\x18\t \x01(\t\x12\x0c\n\x04year\x18\n \x01(\x05\x12\x0c\n\x04type\x18\x0b \x01(\t\x12\x0f\n\x07writers\x18\x0c \x03(\t\x12\x11\n\tcountries\x18\r \x03(\t\x12\x11\n\tlanguages\x18\x0e \x03(\t\x12\x11\n\tdirectors\x18\x0f \x03(\t\"$\n\nMoviesList\x12\x16\n\x06movies\x18\x01 \x03(\x0b\x32\x06.Movieb\x06proto3'
 )
 
 
@@ -136,16 +136,16 @@ _MOVIE = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='countries', full_name='Movie.countries', index=9,
-      number=10, type=9, cpp_type=9, label=3,
-      has_default_value=False, default_value=[],
+      name='year', full_name='Movie.year', index=9,
+      number=10, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='directors', full_name='Movie.directors', index=10,
-      number=11, type=9, cpp_type=9, label=3,
-      has_default_value=False, default_value=[],
+      name='type', full_name='Movie.type', index=10,
+      number=11, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
@@ -157,9 +157,23 @@ _MOVIE = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='year', full_name='Movie.year', index=12,
-      number=13, type=5, cpp_type=1, label=1,
-      has_default_value=False, default_value=0,
+      name='countries', full_name='Movie.countries', index=12,
+      number=13, type=9, cpp_type=9, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='languages', full_name='Movie.languages', index=13,
+      number=14, type=9, cpp_type=9, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='directors', full_name='Movie.directors', index=14,
+      number=15, type=9, cpp_type=9, label=3,
+      has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
@@ -176,7 +190,7 @@ _MOVIE = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=55,
-  serialized_end=268,
+  serialized_end=301,
 )
 
 
@@ -207,8 +221,8 @@ _MOVIESLIST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=270,
-  serialized_end=306,
+  serialized_start=303,
+  serialized_end=339,
 )
 
 _MOVIESLIST.fields_by_name['movies'].message_type = _MOVIE

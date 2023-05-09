@@ -4,6 +4,7 @@ import os
 
 import movies_pb2
 from db import MongoDBClient
+from google.protobuf.json_format import MessageToJson
 
 import datetime
 
@@ -12,7 +13,7 @@ def main():
     db = MongoDBClient()
 
     try:
-        server.bind(('localhost', 7778))
+        server.bind(('localhost', 7777))
         server.listen()
     except:
         server.close()
@@ -51,13 +52,22 @@ def orchestra(client, ip, db):
             print(f'REQ: {ip} > {cmd.cmd} with {cmd.args}')
 
             match cmd.cmd:
-                case "GetByGenre":
-                    res = handleGetByGenre(db, cmd.args[0])
-                    sendResponse(client, res)
+                case "ListByGenre":
+                    res = handleListByGenre(db, cmd.args[0])
                 
-                case "GetByActor":
-                    res = handleGetByActor(db, cmd.args[0])
-                    sendResponse(client, res)
+                case "ListByActor":
+                    res = handleListByActor(db, cmd.args[0])
+
+                case "Create":
+                    res = handleCreate(client, db)
+
+                case "Retrieve":
+                    res = handleRetrieve(db, cmd.args[0])
+
+                case "Delete":
+                    res = handleDelete(db, cmd.args[0])
+            #end switchcase
+            sendResponse(client, res)
 
         except Exception as e:
             print(e)
@@ -70,21 +80,46 @@ def orchestra(client, ip, db):
 
 # =====================================================
 
-def handleGetByGenre(db, genre):
-    movies = db.getByGenre(genre)
+def handleListByGenre(db, genre):
+    movies = db.listByGenre(genre)
     moviesList = movies_pb2.MoviesList()
     for movie in movies:
         moviesList.movies.append(movieToProtobuf(movie))
     return moviesList.SerializeToString()
 #end getbygenre
 
-def handleGetByActor(db, actor):
-    movies = db.getByActor(actor)
+def handleListByActor(db, actor):
+    movies = db.listByActor(actor)
     moviesList = movies_pb2.MoviesList()
     for movie in movies:
         moviesList.movies.append(movieToProtobuf(movie))
     return moviesList.SerializeToString()
 #end getbygenre
+
+def handleDelete(db, movieId):
+    result = db.delete(movieId)
+    cmd = movies_pb2.Command()
+    cmd.cmd = 'Success' if result else 'Failure'
+    return cmd.SerializeToString()
+#end delete
+
+def handleRetrieve(db, name):
+    movie = db.getByTitle(name)
+    if movie:
+        return movieToProtobuf(movie).SerializeToString()
+    return movieToProtobuf({'_id': 'Nao encontrado'}).SerializeToString()
+#end retrieve
+
+def handleCreate(client, db):
+    reqSize = int.from_bytes(client.recv(4), 'big', signed=False)
+    req = client.recv(reqSize)
+    m = movies_pb2.Movie()
+    m.ParseFromString(req)
+
+    result = db.create(MessageToJson(m))
+    cmd = movies_pb2.Command()
+    cmd.cmd = 'Success' if result else 'Failure'
+    return cmd.SerializeToString()
 
 # =====================================================
 
@@ -101,6 +136,7 @@ def movieToProtobuf(movie):
     m.title = movie['title'] if movie.get('title') else "N/A"
     m.poster = movie['poster'] if movie.get('poster') else "N/A"
     m.rated = movie['rated'] if movie.get('rated') else "N/A"
+    m.type = movie['type'] if movie.get('type') else "N/A"
     m.plot = movie['plot'] if movie.get('plot') else "N/A"
     m.fullplot = movie['fullplot'] if movie.get('fullplot') else "N/A"
 
@@ -112,7 +148,8 @@ def movieToProtobuf(movie):
     if movie.get('countries'): m.countries.extend(movie['countries'])
     if movie.get('directors'): m.directors.extend(movie['directors'])
     if movie.get('writers'): m.writers.extend(movie['writers'])
-    return m#.SerializeToString()
+    if movie.get('languages'): m.writers.extend(movie['languages'])
+    return m #.SerializeToString()
 
 # =====================================================
 if __name__ == "__main__":

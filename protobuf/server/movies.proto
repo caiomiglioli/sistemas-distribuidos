@@ -15,10 +15,12 @@ message Movie {
     string poster = 7;
     string title = 8;
     string fullplot = 9;
-    repeated string countries = 10;
-    repeated string directors = 11;
+    int32 year = 10;
+    string type = 11;
     repeated string writers = 12;
-    int32 year = 13;
+    repeated string countries = 13;
+    repeated string languages = 14;
+    repeated string directors = 15;
 }
 
 message MoviesList {

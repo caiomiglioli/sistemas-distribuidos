@@ -1,5 +1,7 @@
 from pymongo import MongoClient
+from bson.objectid import ObjectId
 import pprint
+import json
 
 #import os
 # from dotenv import load_dotenv
@@ -16,21 +18,33 @@ class MongoDBClient:
         self.client = MongoClient(uri)
         self.db = self.client['sample_mflix']
         self.collection = self.db['movies']
-
-    def get_client(self):
-        return self.db
     
-    def getByActor(self, actor):
+    def listByActor(self, actor):
         movies = self.collection.find({'cast': {'$regex': f'.*{actor}.*'}})
         return list(movies)
     
-    def getByGenre(self, genre):
+    def listByGenre(self, genre):
         movies = self.collection.find({'genres': {'$regex': f'.*{genre}.*'}})
         return list(movies)
-#end dbclient
 
+    def delete(self, id):
+        r = self.collection.delete_one({'_id': ObjectId(id)})
+        return r.deleted_count
+    
+    def getByTitle(self, title):
+        movie = self.collection.find_one({'title': {'$regex': f'.*{title}.*'}})
+        return movie
+    
+    def create(self, movie):
+        movie = json.loads(movie)
+        movie.pop('id')
+        id = self.collection.insert_one(movie)
+        return id
+#end db
 
 if __name__ == "__main__":
     db = MongoDBClient()
-    x = db.getByGenre('Animation')
+    # x = db.getByGenre('Animation')
+    # x = db.delete('573a1390f29313caabcd516c')
+    x = db.getByTitle('Regeneration')
     pprint.pprint(x)
