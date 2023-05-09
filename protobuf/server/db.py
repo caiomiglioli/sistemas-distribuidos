@@ -21,11 +21,11 @@ class MongoDBClient:
         return self.db
     
     def getByActor(self, actor):
-        movies = self.collection.find({"cast": { "$in" : [actor]}})
+        movies = self.collection.find({'cast': {'$regex': f'.*{actor}.*'}})
         return list(movies)
     
     def getByGenre(self, genre):
-        movies = self.collection.find({"genres": { "$in" : [genre]}})
+        movies = self.collection.find({'genres': {'$regex': f'.*{genre}.*'}})
         return list(movies)
 #end dbclient
 

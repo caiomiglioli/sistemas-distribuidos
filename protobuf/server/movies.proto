@@ -10,7 +10,7 @@ message Movie {
     string plot = 2;
     repeated string genres = 3;
     int32 runtime = 4;
-    optional string rated = 5;
+    string rated = 5;
     repeated string cast = 6;
     string poster = 7;
     string title = 8;

@@ -5,6 +5,8 @@ import os
 import movies_pb2
 from db import MongoDBClient
 
+import datetime
+
 def main():
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     db = MongoDBClient()
@@ -13,7 +15,8 @@ def main():
         server.bind(('localhost', 7778))
         server.listen()
     except:
-        return print('\nErro ao iniciar o servidor.')
+        server.close()
+        return print ("Desligando servidor")
 
     # Para cada nova conexão, é gerado uma thread que executa a função
     # 'orchestra', que por sua vez, aguarda os comandos do cliente.
@@ -51,6 +54,10 @@ def orchestra(client, ip, db):
                 case "GetByGenre":
                     res = handleGetByGenre(db, cmd.args[0])
                     sendResponse(client, res)
+                
+                case "GetByActor":
+                    res = handleGetByActor(db, cmd.args[0])
+                    sendResponse(client, res)
 
         except Exception as e:
             print(e)
@@ -65,50 +72,72 @@ def orchestra(client, ip, db):
 
 def handleGetByGenre(db, genre):
     movies = db.getByGenre(genre)
-
-    ml = list()
-    for movie in movies:
-        ml.append(movieToProtobuf(movie))
-
     moviesList = movies_pb2.MoviesList()
-    moviesList.movies.extend(ml)
+    for movie in movies:
+        moviesList.movies.append(movieToProtobuf(movie))
+    return moviesList.SerializeToString()
+#end getbygenre
+
+def handleGetByActor(db, actor):
+    movies = db.getByActor(actor)
+    moviesList = movies_pb2.MoviesList()
+    for movie in movies:
+        moviesList.movies.append(movieToProtobuf(movie))
     return moviesList.SerializeToString()
 #end getbygenre
 
 # =====================================================
 
 def sendResponse(client, msg):
+    print(len(msg))
     size = len(msg).to_bytes(4, 'big', signed=False)
     client.send(size)
     client.send(msg)
 #end sendResponde
 
 def movieToProtobuf(movie):
-    print(movie)
     m = movies_pb2.Movie()
     m.id = str(movie['_id'])
-    m.plot = movie['plot'] if movie['plot'] else "N/A"
-    m.genres.extend(movie['genres'])
-    m.runtime = movie['runtime'] if movie['runtime'] else "N/A"
+    m.title = movie['title'] if movie.get('title') else "N/A"
+    m.poster = movie['poster'] if movie.get('poster') else "N/A"
+    m.rated = movie['rated'] if movie.get('rated') else "N/A"
+    m.plot = movie['plot'] if movie.get('plot') else "N/A"
+    m.fullplot = movie['fullplot'] if movie.get('fullplot') else "N/A"
 
+    m.runtime = movie['runtime'] if movie.get('runtime') else -1
+    m.year = int(str(movie.get('year')).split('è')[0]) if movie.get('year') else -1
 
-    print("antes do rated, ", print(movie['rated']))
-
-    if movie['rated']:
-        m.rated = movie['rated']
-    
-    print("passou do rated")
-
-    m.cast.extend(movie['cast'])
-    m.poster = movie['poster'] if movie['poster'] else "N/A"
-    m.title = movie['title'] if movie['title'] else "N/A"
-    m.fullplot = movie['fullplot'] if movie['fullplot'] else "N/A"
-    m.countries.extend(movie['countries'])
-    m.directors.extend(movie['directors'])
-    m.writers.extend(movie['writers'])
-    m.year = movie['year'] if movie['year'] else "N/A"
-    return m #.SerializeToString()
+    if movie.get('cast'): m.cast.extend(movie['cast'])
+    if movie.get('genres'): m.genres.extend(movie['genres'])
+    if movie.get('countries'): m.countries.extend(movie['countries'])
+    if movie.get('directors'): m.directors.extend(movie['directors'])
+    if movie.get('writers'): m.writers.extend(movie['writers'])
+    return m#.SerializeToString()
 
 # =====================================================
 if __name__ == "__main__":
     main()
+
+    # m = {
+    #     '_id': '573a1392f29313caabcda6f1',
+    #     'plot': 'Mickey and his band are determined to perform their music despite the interferance of Donald Duck and a powerful storm.',
+    #     'genres': ['Family', 'Comedy', 'Animation'],
+    #     'runtime': 9,
+    #     'cast': ['Clarence Nash'],
+    #     'title': 'The Band Concert',
+    #     'fullplot': "Mickey is trying to lead a concert of The William Tell Overture, but he's continually disrupted by ice cream vendor Donald, who uses a seemingly endless supply of flutes to play Turkey in the Straw instead. After Donald gives up, a bee comes along and causes his own havoc. The band then reaches the Storm sequence, and the weather also starts to pick up; a tornado comes along, but they keep playing.",
+    #     'languages': ['English'],
+    #     'released': datetime.datetime(1935, 2, 23, 0, 0),
+    #     'directors': ['Wilfred Jackson'],
+    #     'awards': {'wins': 1, 'nominations': 0, 'text': '1 win.'},
+    #     'lastupdated': '2015-08-05 00:51:48.930000000',
+    #     'year': 1935,
+    #     'imdb': {'rating': 7.9, 'votes': 1645, 'id': 26094},
+    #     'countries': ['USA'], 'type': 'movie',
+    #     'tomatoes': {'viewer': {'rating': 3.5, 'numReviews': 71, 'meter': 78},
+    #     'dvd': datetime.datetime(2003, 3, 25, 0, 0),
+    #     'production': 'Orbis Film',
+    #     'lastUpdated': datetime.datetime(2015, 8, 22, 19, 5, 21)},
+    #     'num_mflix_comments': 0
+    # }
+    # print(movieToProtobuf(m))
