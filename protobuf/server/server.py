@@ -15,16 +15,18 @@ def main():
     try:
         server.bind(('localhost', 7777))
         server.listen()
+
+        # Para cada nova conexão, é gerado uma thread que executa a função
+        # 'orchestra', que por sua vez, aguarda os comandos do cliente.
+        while True:
+            client, ip = server.accept()
+            thread = threading.Thread(target=orchestra, args=[client, ip, db])
+            thread.start()
+
     except:
+
         server.close()
         return print ("Desligando servidor")
-
-    # Para cada nova conexão, é gerado uma thread que executa a função
-    # 'orchestra', que por sua vez, aguarda os comandos do cliente.
-    while True:
-        client, ip = server.accept()
-        thread = threading.Thread(target=orchestra, args=[client, ip, db])
-        thread.start()
 #end main
 
 def orchestra(client, ip, db):

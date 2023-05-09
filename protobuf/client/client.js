@@ -1,79 +1,81 @@
 const net = require('net');
-// const protos = require('googele-protobuf');
-// const protobuf = require('protobuf');
+const protos = require('google-protobuf');
 const prompt = require('prompt-sync')();
-// const { Movie } = require('./movies_pb');
+const { Command, MoviesList } = require('./movies_pb');
 
-const options = ['create', 'read', 'update', 'delete', 'list']
-
-const CREATE = 1;
-const UPDATE = 2;
-const DELETE = 3;
-const LIST = 4;
+const {PromiseSocket, TimeoutError} = require("promise-socket")
 
 const client = new net.Socket();
+const promiseSocket = new PromiseSocket(client)
 
 client.connect(7777, 'localhost', function (){
   console.log('Connect');
 
-  firstOutput();
-  getInputs();
+  // firstOutput();
+  // getInputs();
+  handleListByActor('John McCann')
+
 })
 
-const firstOutput = () => {
-  console.log('Esse cliente permite as seguintes operações (digite seu nome indicado, não o número): ');
-  console.log('1. Create');
-  console.log('2. Update');
-  console.log('3. Delete');
-  console.log('4. List');
-  console.log('5. Close');
-  console.log('Qual operação deseja fazer?: ');
-}
+// const firstOutput = () => {
+//   console.log('Esse cliente permite as seguintes operações (digite seu nome indicado, não o número): ');
+//   console.log('1. Create');
+//   console.log('2. Update');
+//   console.log('3. Delete');
+//   console.log('4. List');
+//   console.log('5. Close');
+//   console.log('Qual operação deseja fazer?: ');
+// }
 
 const getInputs = () => {
   while (true) {
     const input = prompt('> ');
-    if (options.includes(input.trim())) {
-      let message = setMessageType(input.trim());
-      console.log(message);
+    [cmd, arg] = input.split(' ')
 
+    if (cmd === 'ListByActor'){
+      handleListByActor(arg)
     }
-    else if(input === 'close'){
-      client.destroy();
-      break;
-    }  
+
+    // if (options.includes(input.trim())) {
+    //   let message = setMessageType(input.trim());
+    //   console.log(message);
+
+    // }
+    // else if(input === 'close'){
+    //   client.destroy();
+    //   break;
+    // }  
   }
 }
 
-const setMessageType = (input) =>{
-  let message = 0;
+const  handleListByActor = async (arg) =>{
+  const cmd = new Command();
+  cmd.setCmd("ListByActor")
+  cmd.addArgs(arg)
+  const sCmd = cmd.serializeBinary();
 
-  switch (input) {
-    case 'create':
-      console.log('caso1');
-      message = CREATE;
-      break;
+  client.write(toBytesInt32(sCmd.length))
+  client.write(sCmd)
 
-    case 'update':
-      message = UPDATE;
-      break;
+  //receber 4 bytes pra inteiro
+  //receber o resto do pacote
+  const dataSize = await promiseSocket.read(4)
+  const data = await promiseSocket.read(bytesToNum(dataSize))
+  
 
-    case 'delete':
-      message = DELETE;
-      break;
+  const mList = MoviesList.deserializeBinary(data)
 
-    case 'list':
-      message = LIST;
-      break;
-
-    default:
-      message = undefined;
-      break;
-  }
-
-  return message;
+  console.log(mList.getMoviesList())
 }
 
-// const toBytes = (num) => {
-//   return Buffer.from(num.toString(16).padStart(2, '0'), 'hex');
-// }
+function toBytesInt32(num) {
+  arr = new ArrayBuffer(4); // an Int32 takes 4 bytes
+  view = new DataView(arr);
+  view.setUint32(0, num, false); // byteOffset = 0; litteEndian = false
+  return new Uint8Array(arr);
+}
+
+function bytesToNum(bytes){
+  const buffer = Buffer.from(bytes); // buffer com 4 bytes
+  return buffer.readUInt32BE();
+}
