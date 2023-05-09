@@ -7,10 +7,9 @@ const prompt = require('prompt-sync')();
 const options = ['create', 'read', 'update', 'delete', 'list']
 
 const CREATE = 1;
-const READ = 2;
-const UPDATE = 3;
-const DELETE = 4;
-const LIST = 5;
+const UPDATE = 2;
+const DELETE = 3;
+const LIST = 4;
 
 const client = new net.Socket();
 
@@ -24,11 +23,10 @@ client.connect(7777, 'localhost', function (){
 const firstOutput = () => {
   console.log('Esse cliente permite as seguintes operações (digite seu nome indicado, não o número): ');
   console.log('1. Create');
-  console.log('2. Read');
-  console.log('3. Update');
-  console.log('4. Delete');
-  console.log('5. List');
-  console.log('6. Close');
+  console.log('2. Update');
+  console.log('3. Delete');
+  console.log('4. List');
+  console.log('5. Close');
   console.log('Qual operação deseja fazer?: ');
 }
 
@@ -36,8 +34,8 @@ const getInputs = () => {
   while (true) {
     const input = prompt('> ');
     if (options.includes(input.trim())) {
-      var message = setMessageType(input.trim());
-
+      let message = setMessageType(input.trim());
+      console.log(message);
 
     }
     else if(input === 'close'){
@@ -53,23 +51,19 @@ const setMessageType = (input) =>{
   switch (input) {
     case 'create':
       console.log('caso1');
-      message += toBytes(CREATE);
-      break;
-
-    case 'read':
-      message += toBytes(READ);
+      message = CREATE;
       break;
 
     case 'update':
-      message += toBytes(UPDATE);
+      message = UPDATE;
       break;
 
     case 'delete':
-      message += toBytes(DELETE);
+      message = DELETE;
       break;
 
     case 'list':
-      message += toBytes(LIST);
+      message = LIST;
       break;
 
     default:
