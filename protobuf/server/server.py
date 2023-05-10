@@ -1,3 +1,17 @@
+"""
+Este código implementa a parte servidor de um programa cliente/servidor
+de gerenciamento de uma base de dados de filmes, onde a comunicação
+ocorre sockets TCP e formato Protobuf para cominucação.
+
+Autores:
+  - Caio Miglioli @caiomiglioli
+  - Ryan Lazaretti @ryanramos01
+
+Data de Criação: 06 de Abril de 2023
+Ultima alteração: 09 de Abril de 2023
+"""
+
+
 import threading
 import socket
 import os
@@ -6,11 +20,9 @@ import movies_pb2
 from db import MongoDBClient
 from google.protobuf.json_format import MessageToJson
 
-import datetime
-
 def main():
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    db = MongoDBClient()
+    db = MongoDBClient() #conecta com o banco de dados
 
     try:
         server.bind(('localhost', 7778))
@@ -24,7 +36,6 @@ def main():
             thread.start()
 
     except:
-
         server.close()
         return print ("Desligando servidor")
 #end main
@@ -32,11 +43,11 @@ def main():
 def orchestra(client, ip, db):
     """
     Função responsável por orquestrar os comandos recebidos do cliente,
-    chamando as funções corretas baseadas no código do comando recebido
-    no pacote do cliente.
+    chamando as funções corretas baseadas no comando recebido no pacote do cliente.
 
     Esta função é executada em uma thread separada para cada usuário conectado.
-    Recebe um socket 'Client' como argumento.
+    Recebe um socket 'Client' e o ip como argumento, e também uma instância do conector
+    do MongoDB "db" (MongoDBClient).
     """
 
     print('cliente conectado')
@@ -76,16 +87,20 @@ def orchestra(client, ip, db):
 
         except Exception as e:
             print(e)
-            print("cannot receive data")
             break
 
-    print('cliente perdeu a conexão')
+    print('cliente desconectado')
     client.close()
 #end orchestra
 
 # =====================================================
 
 def handleListByGenre(db, genre):
+    """
+    Busca os filmes no banco de dados com o filtro Genre
+    converte em protobuf e retorna tudo serializado para
+    que se possa enviar para o cliente
+    """
     movies = db.listByGenre(genre)
     moviesList = movies_pb2.MoviesList()
     for movie in movies:
@@ -94,6 +109,11 @@ def handleListByGenre(db, genre):
 #end getbygenre
 
 def handleListByActor(db, actor):
+    """
+    Busca os filmes no banco de dados com o filtro Actor
+    converte em protobuf e retorna tudo serializado para
+    que se possa enviar para o cliente
+    """
     movies = db.listByActor(actor)
     moviesList = movies_pb2.MoviesList()
     for movie in movies:
@@ -102,6 +122,11 @@ def handleListByActor(db, actor):
 #end getbygenre
 
 def handleDelete(db, movieId):
+    """
+    Deleta o filme do banco de dados através de o ID e
+    retorna em protobuf o resultado (se teve sucesso ou
+    falha)
+    """
     result = db.delete(movieId)
     cmd = movies_pb2.Command()
     cmd.cmd = 'Success' if result else 'Failure'
@@ -109,6 +134,11 @@ def handleDelete(db, movieId):
 #end delete
 
 def handleRead(db, name):
+    """
+    Busca um filme no banco de dados com o filtro Title
+    converte em protobuf e retorna tudo serializado para
+    que se possa enviar para o cliente.
+    """
     movie = db.getByTitle(name)
     if movie:
         return movieToProtobuf(movie).SerializeToString()
@@ -116,6 +146,11 @@ def handleRead(db, name):
 #end retrieve
 
 def handleCreate(client, db):
+    """
+    Recebe um protobuf do tipo movie do cliente, transforma
+    em Json e envia pro banco de dados criar a instância.
+    Retorna um protobuf serializado com o resultado da operação
+    """
     reqSize = int.from_bytes(client.recv(4), 'big', signed=False)
     req = client.recv(reqSize)
     m = movies_pb2.Movie()
@@ -128,6 +163,14 @@ def handleCreate(client, db):
 #end create
 
 def handleUpdate(client, db, movieId):
+    """
+    Busca um filme no banco de dados com o filtro ID
+    converte em protobuf e retorna tudo serializado para
+    o cliente. Após isso, recebe um protobuf do tipo movie
+    do cliente, transforma em Json e envia pro banco de dados
+    editar a instância.
+    Retorna um protobuf serializado com o resultado da operação
+    """
     #envio os dados do filme
     m = db.getById(movieId)
     if not m:
@@ -151,6 +194,12 @@ def handleUpdate(client, db, movieId):
 # =====================================================
 
 def sendResponse(client, msg):
+    """
+    Envia pacotes do servidor ao cliente na seguinte ordem:
+    Tamanho do pacote (4bytes)
+    Pacote (Tamanho do Pacote bytes)
+    Pacote pode ser diferentes tipos de protobuf
+    """
     print(len(msg))
     size = len(msg).to_bytes(4, 'big', signed=False)
     client.send(size)
@@ -158,6 +207,10 @@ def sendResponse(client, msg):
 #end sendResponde
 
 def movieToProtobuf(movie):
+    """
+    Cria e retorna uma instância de protobuf Movie a
+    partir de um dicionário (movie).
+    """
     m = movies_pb2.Movie()
     m.id = str(movie['_id'])
     m.title = movie['title'] if movie.get('title') else "N/A"

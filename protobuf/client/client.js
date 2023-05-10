@@ -13,11 +13,12 @@
 
 // módulo de socket TCP do nodejs
 const net = require('net');
+const { PromiseSocket, TimeoutError } = require("promise-socket")
+
 // módulo protobuf
-const prompt = require('prompt-sync')();
 const { Command, MoviesList, Movie } = require('./movies_pb');
 
-const { PromiseSocket, TimeoutError } = require("promise-socket")
+const prompt = require('prompt-sync')();
 
 //cria um novo socket
 const client = new net.Socket();

@@ -1,6 +1,5 @@
 import socket
 import movies_pb2
-import datetime
 
 def main():
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
