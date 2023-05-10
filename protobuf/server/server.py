@@ -13,7 +13,7 @@ def main():
     db = MongoDBClient()
 
     try:
-        server.bind(('localhost', 7777))
+        server.bind(('localhost', 7778))
         server.listen()
 
         # Para cada nova conexão, é gerado uma thread que executa a função
@@ -63,8 +63,11 @@ def orchestra(client, ip, db):
                 case "Create":
                     res = handleCreate(client, db)
 
-                case "Retrieve":
-                    res = handleRetrieve(db, cmd.args[0])
+                case "Update":
+                    res = handleUpdate(client, db, cmd.args[0])
+
+                case "Read":
+                    res = handleRead(db, cmd.args[0])
 
                 case "Delete":
                     res = handleDelete(db, cmd.args[0])
@@ -105,7 +108,7 @@ def handleDelete(db, movieId):
     return cmd.SerializeToString()
 #end delete
 
-def handleRetrieve(db, name):
+def handleRead(db, name):
     movie = db.getByTitle(name)
     if movie:
         return movieToProtobuf(movie).SerializeToString()
@@ -122,6 +125,28 @@ def handleCreate(client, db):
     cmd = movies_pb2.Command()
     cmd.cmd = 'Success' if result else 'Failure'
     return cmd.SerializeToString()
+#end create
+
+def handleUpdate(client, db, movieId):
+    #envio os dados do filme
+    m = db.getById(movieId)
+    if not m:
+        return movieToProtobuf({'_id': 'Nao encontrado'}).SerializeToString()
+    movie = movieToProtobuf(m).SerializeToString()
+    sendResponse(client, movie)
+
+    #recebe os dados atualizados e atualiza no banco
+    reqSize = int.from_bytes(client.recv(4), 'big', signed=False)
+    req = client.recv(reqSize)
+    m = movies_pb2.Movie()
+    m.ParseFromString(req)
+    result = db.update(movieId, MessageToJson(m))
+
+    #retorna status
+    cmd = movies_pb2.Command()
+    cmd.cmd = 'Success' if result else 'Failure'
+    return cmd.SerializeToString()
+#end update
 
 # =====================================================
 
