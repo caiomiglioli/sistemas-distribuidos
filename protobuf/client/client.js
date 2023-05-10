@@ -1,33 +1,35 @@
+
+// Este código implementa a parte cliente de um programa cliente/servidor
+// de gerenciamento de uma base de dados de filmes, onde a comunicação
+// ocorre sockets TCP e formato Protobuf para cominucação.
+
+// Autores:
+//  - Caio Miglioli @caiomiglioli
+//  - Ryan Lazaretti @ryanramos01
+
+// Data de Criação: 06 de Abril de 2023
+// Ultima alteração: 09 de Abril de 2023
+
+
+// módulo de socket TCP do nodejs
 const net = require('net');
-const protos = require('google-protobuf');
+// módulo protobuf
 const prompt = require('prompt-sync')();
 const { Command, MoviesList, Movie } = require('./movies_pb');
 
 const { PromiseSocket, TimeoutError } = require("promise-socket")
 
+//cria um novo socket
 const client = new net.Socket();
 const promiseSocket = new PromiseSocket(client)
 
-
+//inicia a conexão
 client.connect(7778, 'localhost', function () {
   console.log('Connect');
-
-  // firstOutput();
   getInputs();
-
-
 })
 
-// const firstOutput = () => {
-//   console.log('Esse cliente permite as seguintes operações (digite seu nome indicado, não o número): ');
-//   console.log('1. Create');
-//   console.log('2. Update');
-//   console.log('3. Delete');
-//   console.log('4. List');
-//   console.log('5. Close');
-//   console.log('Qual operação deseja fazer?: ');
-// }
-
+//função para capitar os inputs do usuário e setar qual comando e argumento está sendo passado.
 const getInputs = async () => {
   while (true) {
     const input = prompt('> ');
@@ -55,6 +57,7 @@ const getInputs = async () => {
   }
 }
 
+//constrói o handle da operação "ListByActor"
 const handleListByActor = async (arg) => {
   sendCommand("ListByActor", arg)
   const data = await receiveData()
@@ -64,6 +67,7 @@ const handleListByActor = async (arg) => {
   })
 }
 
+//constrói o handle da operação "ListByGenre"
 const handleListByGenre = async (arg) => {
   sendCommand("ListByGenre", arg)
   const data = await receiveData()
@@ -73,7 +77,7 @@ const handleListByGenre = async (arg) => {
   })
 }
 
-
+//constrói o handle da operação "Read"
 const handleRead = async (arg) => {
   sendCommand("Read", arg)
   data = await receiveData()
@@ -81,6 +85,7 @@ const handleRead = async (arg) => {
   printMovie(movie.toObject())
 }
 
+//constrói o handle da operação "Create"
 const handleCreate = async () => {
   sendCommand("Create", "N/A")
 
@@ -115,22 +120,21 @@ const handleCreate = async () => {
   }
 }
 
+//constrói o handle da operação "Update"
 const handleUpdate = async (arg) => {
-  //enviou o comando
   sendCommand("Update", arg)
 
-  //recebe protobuf do movie
   data = await receiveData()
   const movie = Movie.deserializeBinary(data)
   const mAux = movie.toObject()
 
-  //edita e devolve pro servidor
+  //devolve a informação já editada para o servidor
   const m = editMovieToProtobuf(mAux);
   const mProto = m.serializeBinary()
   client.write(toBytesInt32(mProto.length));
   client.write(mProto);
 
-  //recebe a confirmação
+  //recebe a resposta de sucesso ou falha
   data = await receiveData()
   const res = Command.deserializeBinary(data)
   if (res.getCmd() === "Success") {
@@ -140,6 +144,7 @@ const handleUpdate = async (arg) => {
   }
 }
 
+//constrói o handle da operação "Delete"
 const handleDelete = async (arg) => {
   sendCommand("Delete", arg)
   data = await receiveData()
@@ -151,6 +156,7 @@ const handleDelete = async (arg) => {
   }
 }
 
+//recebe o comando e o argumento, seta ambos, serealiza e envia para o servidor
 const sendCommand = (command, arg) => {
   const cmd = new Command();
   cmd.setCmd(command)
@@ -160,30 +166,34 @@ const sendCommand = (command, arg) => {
   client.write(sCmd)
 }
 
+//recebe o dado retornado pelo servidor
 const receiveData = async () => {
   const dataSize = await promiseSocket.read(4)
   const data = await promiseSocket.read(bytesToNum(dataSize))
   return data
 }
 
+//printa o objeto passado
 const printMovie = (movie) =>{
   console.log(movie)
 }
 
-
+//converte int32 para bytes
 function toBytesInt32(num) {
-  arr = new ArrayBuffer(4); // an Int32 takes 4 bytes
+  arr = new ArrayBuffer(4); 
   view = new DataView(arr);
-  view.setUint32(0, num, false); // byteOffset = 0; litteEndian = false
+  view.setUint32(0, num, false); 
   return new Uint8Array(arr);
 }
 
+
+//converte bytes para int32
 function bytesToNum(bytes) {
-  const buffer = Buffer.from(bytes); // buffer com 4 bytes
+  const buffer = Buffer.from(bytes);
   return buffer.readUInt32BE();
 }
 
-
+//função auxiliar para inputs de create e update
 const editMovieToProtobuf = (movie) => {
   const m = new Movie();
   m.id = 'NEW';
