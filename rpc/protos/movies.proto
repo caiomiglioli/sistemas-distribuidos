@@ -1,0 +1,42 @@
+// $ cd ./server
+// $ python -m grpc_tools.protoc -I../protos --python_out=. --pyi_out=. --grpc_python_out=. ../protos/movies.proto
+
+
+syntax = "proto3";
+
+package Movies;
+
+service Movies{
+    rpc ListByGenre(Msg) returns (stream Movie) {};
+    rpc ListByActor(Msg) returns (stream Movie) {};
+    rpc Create(Movie) returns (Msg) {};
+    rpc Read(Msg) returns (Movie) {};
+    // rpc Update(????) returns (Msg) {};
+    rpc Delete(Msg) returns (Msg) {};
+}
+
+message Msg {
+    string message = 1;
+}
+
+message Movie {
+    string id = 1;
+    string plot = 2;
+    repeated string genres = 3;
+    int32 runtime = 4;
+    string rated = 5;
+    repeated string cast = 6;
+    string poster = 7;
+    string title = 8;
+    string fullplot = 9;
+    int32 year = 10;
+    string type = 11;
+    repeated string writers = 12;
+    repeated string countries = 13;
+    repeated string languages = 14;
+    repeated string directors = 15;
+}
+
+message MoviesList {
+    repeated Movie movies = 1;
+}
