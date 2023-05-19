@@ -1,9 +1,6 @@
 const grpc = require('@grpc/grpc-js')
 var protoLoader = require('@grpc/proto-loader');
 
-var packageDefinition = protoLoader.loadSync('../protos/movies.proto');//,{keepCase: true,longs: String,enums: String,defaults: true,oneofs: true});
-var moviespackage = grpc.loadPackageDefinition(packageDefinition).moviespackage
-
 // //grpc promise => https://github.com/carlessistare/grpc-promise#readme
 // const grpc_promise = require('grpc-promise');
 // grpc_promise.promisifyAll(stub); //transforma tudo em promise pra usar async await
@@ -19,7 +16,8 @@ async function handleRead(stub, Msg){
             if (error) reject(error);
             
             //Tratamento da funcao
-            console.log('success =>>>', Movie) 
+            console.log('success =>>>', Movie)
+            
             //dentro da promise, resolve() = return
             resolve()
         })
@@ -56,6 +54,8 @@ async function handleListByActor(stub, Msg){
 
 const main = async () => {
     //stub = client
+    var packageDefinition = protoLoader.loadSync('../protos/movies.proto');
+    var moviespackage = grpc.loadPackageDefinition(packageDefinition).moviespackage
     var stub = new moviespackage.Movies('localhost:7777', grpc.credentials.createInsecure());
 
     //Read
