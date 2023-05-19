@@ -4,7 +4,7 @@
 
 syntax = "proto3";
 
-package Movies;
+package moviespackage;
 
 service Movies{
     rpc ListByGenre(Msg) returns (stream Movie) {};

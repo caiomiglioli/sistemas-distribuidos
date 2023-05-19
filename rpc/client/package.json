@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@grpc/grpc-js": "^1.8.14",
+    "grpc-promise": "^1.4.0"
+  }
+}

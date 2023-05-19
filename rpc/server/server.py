@@ -44,13 +44,6 @@ class MoviesServicer(movies_pb2_grpc.MoviesServicer):
     #end delete
 #end class
 
-def serve():
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    movies_pb2_grpc.add_MoviesServicer_to_server(MoviesServicer(), server)
-    server.add_insecure_port('[::]:7777')
-    server.start()
-    server.wait_for_termination()
-
 def movieToProtobuf(movie):
     """
     Cria e retorna uma instância de protobuf Movie a
@@ -73,6 +66,15 @@ def movieToProtobuf(movie):
     if movie.get('writers'): m.writers.extend(movie['writers'])
     if movie.get('languages'): m.writers.extend(movie['languages'])
     return m #.SerializeToString()
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~ SERVER ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+def serve():
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    movies_pb2_grpc.add_MoviesServicer_to_server(MoviesServicer(), server)
+    server.add_insecure_port('[::]:7777')
+    server.start()
+    server.wait_for_termination()
 
 if __name__ == '__main__': 
     serve()

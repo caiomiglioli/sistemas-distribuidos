@@ -15,27 +15,27 @@ class MoviesStub(object):
             channel: A grpc.Channel.
         """
         self.ListByGenre = channel.unary_stream(
-                '/Movies.Movies/ListByGenre',
+                '/moviespackage.Movies/ListByGenre',
                 request_serializer=movies__pb2.Msg.SerializeToString,
                 response_deserializer=movies__pb2.Movie.FromString,
                 )
         self.ListByActor = channel.unary_stream(
-                '/Movies.Movies/ListByActor',
+                '/moviespackage.Movies/ListByActor',
                 request_serializer=movies__pb2.Msg.SerializeToString,
                 response_deserializer=movies__pb2.Movie.FromString,
                 )
         self.Create = channel.unary_unary(
-                '/Movies.Movies/Create',
+                '/moviespackage.Movies/Create',
                 request_serializer=movies__pb2.Movie.SerializeToString,
                 response_deserializer=movies__pb2.Msg.FromString,
                 )
         self.Read = channel.unary_unary(
-                '/Movies.Movies/Read',
+                '/moviespackage.Movies/Read',
                 request_serializer=movies__pb2.Msg.SerializeToString,
                 response_deserializer=movies__pb2.Movie.FromString,
                 )
         self.Delete = channel.unary_unary(
-                '/Movies.Movies/Delete',
+                '/moviespackage.Movies/Delete',
                 request_serializer=movies__pb2.Msg.SerializeToString,
                 response_deserializer=movies__pb2.Msg.FromString,
                 )
@@ -105,7 +105,7 @@ def add_MoviesServicer_to_server(servicer, server):
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'Movies.Movies', rpc_method_handlers)
+            'moviespackage.Movies', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
 
 
@@ -124,7 +124,7 @@ class Movies(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_stream(request, target, '/Movies.Movies/ListByGenre',
+        return grpc.experimental.unary_stream(request, target, '/moviespackage.Movies/ListByGenre',
             movies__pb2.Msg.SerializeToString,
             movies__pb2.Movie.FromString,
             options, channel_credentials,
@@ -141,7 +141,7 @@ class Movies(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_stream(request, target, '/Movies.Movies/ListByActor',
+        return grpc.experimental.unary_stream(request, target, '/moviespackage.Movies/ListByActor',
             movies__pb2.Msg.SerializeToString,
             movies__pb2.Movie.FromString,
             options, channel_credentials,
@@ -158,7 +158,7 @@ class Movies(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/Movies.Movies/Create',
+        return grpc.experimental.unary_unary(request, target, '/moviespackage.Movies/Create',
             movies__pb2.Movie.SerializeToString,
             movies__pb2.Msg.FromString,
             options, channel_credentials,
@@ -175,7 +175,7 @@ class Movies(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/Movies.Movies/Read',
+        return grpc.experimental.unary_unary(request, target, '/moviespackage.Movies/Read',
             movies__pb2.Msg.SerializeToString,
             movies__pb2.Movie.FromString,
             options, channel_credentials,
@@ -192,7 +192,7 @@ class Movies(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/Movies.Movies/Delete',
+        return grpc.experimental.unary_unary(request, target, '/moviespackage.Movies/Delete',
             movies__pb2.Msg.SerializeToString,
             movies__pb2.Msg.FromString,
             options, channel_credentials,
