@@ -1,5 +1,6 @@
 const grpc = require('@grpc/grpc-js')
 var protoLoader = require('@grpc/proto-loader');
+const prompt = require('prompt-sync')();
 
 // //grpc promise => https://github.com/carlessistare/grpc-promise#readme
 // const grpc_promise = require('grpc-promise');
@@ -7,12 +8,12 @@ var protoLoader = require('@grpc/proto-loader');
 
 // ================= CHAMADAS =======================
 
-async function handleRead(stub, Msg){
+async function handleRead(stub, movieName){
     await new Promise((resolve, reject) => {
         // **** comandos do grpc sempre dentro da promise **** 
 
         //chama funcao read do stub, com Msg de parametro e callback
-        stub.Read(Msg, (error, Movie) => {
+        stub.Read({'message' : movieName}, (error, Movie) => {
             if (error) reject(error);
             
             //Tratamento da funcao
@@ -24,11 +25,87 @@ async function handleRead(stub, Msg){
     })
 }
 
+async function handleDelete(stub, movieId){
+    await new Promise((resolve, reject) => {
+        // **** comandos do grpc sempre dentro da promise **** 
+
+        //chama funcao delete do stub, com Msg de parametro e callback
+        stub.Delete({'message' : movieId}, (error, message) => {
+            if (error) reject(error);
+            
+            //Tratamento da funcao
+            console.log('success =>>>', message.message)
+            
+            //dentro da promise, resolve() = return
+            resolve()
+        })
+    })
+}
+
 // ~~~~~ ListByActor (stream do servidor) ~~~~
-async function handleListByActor(stub, Msg){    
+async function handleListByActor(stub, nameActor){    
     await new Promise((resolve, reject) => {
         //chama funcao read do stub, com Msg de parametro
-        var call = stub.ListByActor(Msg);       
+        var call = stub.ListByActor({'message' : nameActor});       
+        
+        //fica recebendo movie em stream
+        call.on('data', (Movie) => {            
+            console.log('\n==================== Movie ====================\n')
+            console.log(Movie);
+        });
+        
+        //é chamado quando o servidor termina de mandar os movie
+        call.on('end', () => {                  
+            console.log('*** end ***')
+            resolve()
+        });
+        
+        //em caso de erro
+        call.on('error', (e) => {
+            reject(e)
+        });
+    })
+};
+
+async function handleCreate(stub){
+    const defaultMovie = {
+        'plot': 'N/A',
+        'genres': ['N/A'],
+        'runtime': -1,
+        'rated': 'N/A',
+        'cast': [],
+        'poster': 'N/A',
+        'title': 'N/A',
+        'fullplot': "N/A",
+        'year': -1,
+        'type': 'N/A',
+        'writers': [],
+        'countries': [],
+        'languages': [],
+        'directors': [],
+    }
+    
+    const movie = editMovie(defaultMovie)
+    await new Promise((resolve, reject) => {
+        // **** comandos do grpc sempre dentro da promise **** 
+
+        //chama funcao delete do stub, com Msg de parametro e callback
+        stub.Create(movie, (error, message) => {
+            if (error) reject(error);
+            
+            //Tratamento da funcao
+            console.log('success =>>>', message.message)
+            
+            //dentro da promise, resolve() = return
+            resolve()
+        })
+    })
+}
+
+async function handleListByGenre(stub, nameGenre){    
+    await new Promise((resolve, reject) => {
+        //chama funcao read do stub, com Msg de parametro
+        var call = stub.ListByGenre({'message' : nameGenre});       
         
         //fica recebendo movie em stream
         call.on('data', (Movie) => {            
@@ -50,6 +127,94 @@ async function handleListByActor(stub, Msg){
 };
 
 
+
+const editMovie = (movie) => {
+    var input = null;
+  
+    console.log('==== 1. CAMPO PLOT\nValor atual: ', movie.plot)
+    input = prompt('Novo valor > ');
+    if (input) movie.plot = input
+
+    console.log('==== 2. CAMPO GENRES\nValor atual: ', movie.genres)
+    input = prompt('Novo valor > ');
+    if (input) movie.genres = input.split(' ')
+  
+    console.log('==== 3. CAMPO RUNTIME\nValor atual: ', movie.runtime)
+    input = prompt('Novo valor > ');
+    if (input) movie.runtime = input
+
+    console.log('==== 4. CAMPO RATED\nValor atual: ', movie.rated)
+     input = prompt('Novo valor > ');
+     if (input) movie.rated = input
+  
+    console.log('==== 5. CAMPO CAST\nValor atual: ', movie.cast)
+    input = prompt('Novo valor > ');
+    if (input) movie.cast = input.split(' ')
+  
+    console.log('==== 6. CAMPO POSTER\nValor atual: ', movie.poster)
+    input = prompt('Novo valor > ');
+    if (input) movie.poster = input
+
+    console.log('==== 7. CAMPO TITLE\nValor atual: ', movie.title)
+    input = prompt('Novo valor > ');
+    if (input) movie.title = input
+  
+    console.log('==== 8. CAMPO FULLPLOT\nValor atual: ', movie.fullplot)
+    input = prompt('Novo valor > ');
+    if (input) movie.fullplot = input
+
+    console.log('==== 9. CAMPO YEAR\nValor atual: ', movie.year)
+    input = prompt('Novo valor > ');
+    if (input) movie.year = input
+  
+    console.log('==== 10. CAMPO TYPE\nValor atual: ', movie.type)
+    input = prompt('Novo valor > ');
+    if (input) movie.type = input
+  
+    console.log('==== 11. CAMPO WRITERS\nValor atual: ', movie.writers)
+    input = prompt('Novo valor > ');
+    if (input) movie.cast = input.split(' ')
+   
+    console.log('==== 12. CAMPO COUNTRIES\nValor atual: ', movie.countries)
+    input = prompt('Novo valor > ');
+    if (input) movie.countries = input.split(' ')
+  
+    console.log('==== 13. CAMPO LANGUAGES\nValor atual: ', movie.languages)
+    input = prompt('Novo valor > ');
+    if (input) movie.languages = input.split(' ')
+  
+    console.log('==== 14. CAMPO DIRECTORS\nValor atual: ', movie.directors)
+    input = prompt('Novo valor > ');
+    if (input) movie.languages = input.split(' ')
+
+    return movie
+  }
+
+  const getInputs = async (stub) => {
+    while (true) {
+      const input = prompt('> ');
+      [cmd, arg] = input.split(' ')
+  
+      if (cmd === 'ListByActor') {
+        await handleListByActor(stub, arg)
+      } else if (cmd === 'ListByGenre') {
+        await handleListByGenre(stub, arg)
+      } else if (cmd === 'Read') {
+        await handleRead(stub, arg)
+      } else if (cmd === 'Create') {
+        await handleCreate(stub)
+    //   } else if (cmd === 'Update') {
+    //     await handleUpdate(stub, arg)
+      } else if (cmd === 'Delete') {
+        await handleDelete(stub, arg)
+      }
+      else if (input === 'close') {
+        break;
+      } else {
+        console.log('Comando inexistente.')
+      }
+    }
+  }
 // ================= CLIENT ORCHESTRA =======================
 
 const main = async () => {
@@ -58,16 +223,7 @@ const main = async () => {
     var moviespackage = grpc.loadPackageDefinition(packageDefinition).moviespackage
     var stub = new moviespackage.Movies('localhost:7777', grpc.credentials.createInsecure());
 
-    //Read
-    var Msg = {'message': 'Your Highness'} //criar um objeto com as mesmas chaves do movies.proto
-    await handleRead(stub, Msg)
-    
-    //ListByActor
-    Msg = {'message': 'James'}
-    await handleListByActor(stub, Msg)
-
-
-    console.log('ISSO TEM QUE VIR DEPOIS DE TUDO')
+    getInputs(stub)
 }
 
 main()

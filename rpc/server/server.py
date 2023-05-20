@@ -25,6 +25,7 @@ class MoviesServicer(movies_pb2_grpc.MoviesServicer):
             yield movieToProtobuf(movie)
     
     def Create(self, request, context):
+        print(request)
         result = self.db.create(MessageToJson(request))
         return movies_pb2.Msg(
             message = 'Success' if result else 'Failure'
