@@ -37,6 +37,31 @@ class MoviesServicer(movies_pb2_grpc.MoviesServicer):
             movie = {'_id': 'Não encontrado'}
         return movieToProtobuf(movie)
 
+    def Update(self, request_iterator, context):
+        movieId = None
+        for request in request_iterator:
+            if request.order == 0:
+                movieId = request.arg
+                movieToEdit = self.db.getById(movieId)
+                yield movies_pb2.Update_(
+                    order = 1,
+                    movie = movieToProtobuf(movieToEdit)
+                )
+
+            elif request.order == 2:
+                result = self.db.update(movieId, MessageToJson(request.movie)) if movieId else None
+                yield movies_pb2.Update_(
+                    order = 3,
+                    arg = 'Success' if result else 'Failure'
+                )
+                break
+
+            else:
+                yield movies_pb2.Update_(order = 3, arg = 'Failure')
+                break
+        #end for
+    #end update
+
     def Delete(self, request, context):
         result = self.db.delete(request.message)
         return movies_pb2.Msg(

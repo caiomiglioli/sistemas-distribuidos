@@ -13,19 +13,19 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0cmovies.proto\x12\rmoviespackage\"\x16\n\x03Msg\x12\x0f\n\x07message\x18\x01 \x01(\t\"\xf6\x01\n\x05Movie\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04plot\x18\x02 \x01(\t\x12\x0e\n\x06genres\x18\x03 \x03(\t\x12\x0f\n\x07runtime\x18\x04 \x01(\x05\x12\r\n\x05rated\x18\x05 \x01(\t\x12\x0c\n\x04\x63\x61st\x18\x06 \x03(\t\x12\x0e\n\x06poster\x18\x07 \x01(\t\x12\r\n\x05title\x18\x08 \x01(\t\x12\x10\n\x08\x66ullplot\x18\t \x01(\t\x12\x0c\n\x04year\x18\n \x01(\x05\x12\x0c\n\x04type\x18\x0b \x01(\t\x12\x0f\n\x07writers\x18\x0c \x03(\t\x12\x11\n\tcountries\x18\r \x03(\t\x12\x11\n\tlanguages\x18\x0e \x03(\t\x12\x11\n\tdirectors\x18\x0f \x03(\t\"2\n\nMoviesList\x12$\n\x06movies\x18\x01 \x03(\x0b\x32\x14.moviespackage.Movie2\xa0\x02\n\x06Movies\x12;\n\x0bListByGenre\x12\x12.moviespackage.Msg\x1a\x14.moviespackage.Movie\"\x00\x30\x01\x12;\n\x0bListByActor\x12\x12.moviespackage.Msg\x1a\x14.moviespackage.Movie\"\x00\x30\x01\x12\x34\n\x06\x43reate\x12\x14.moviespackage.Movie\x1a\x12.moviespackage.Msg\"\x00\x12\x32\n\x04Read\x12\x12.moviespackage.Msg\x1a\x14.moviespackage.Movie\"\x00\x12\x32\n\x06\x44\x65lete\x12\x12.moviespackage.Msg\x1a\x12.moviespackage.Msg\"\x00\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0cmovies.proto\x12\rmoviespackage\"Y\n\x07Update_\x12\r\n\x05order\x18\x01 \x01(\x05\x12\r\n\x03\x61rg\x18\x02 \x01(\tH\x00\x12%\n\x05movie\x18\x03 \x01(\x0b\x32\x14.moviespackage.MovieH\x00\x42\t\n\x07\x63ontent\"\x16\n\x03Msg\x12\x0f\n\x07message\x18\x01 \x01(\t\"\xf6\x01\n\x05Movie\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04plot\x18\x02 \x01(\t\x12\x0e\n\x06genres\x18\x03 \x03(\t\x12\x0f\n\x07runtime\x18\x04 \x01(\x05\x12\r\n\x05rated\x18\x05 \x01(\t\x12\x0c\n\x04\x63\x61st\x18\x06 \x03(\t\x12\x0e\n\x06poster\x18\x07 \x01(\t\x12\r\n\x05title\x18\x08 \x01(\t\x12\x10\n\x08\x66ullplot\x18\t \x01(\t\x12\x0c\n\x04year\x18\n \x01(\x05\x12\x0c\n\x04type\x18\x0b \x01(\t\x12\x0f\n\x07writers\x18\x0c \x03(\t\x12\x11\n\tcountries\x18\r \x03(\t\x12\x11\n\tlanguages\x18\x0e \x03(\t\x12\x11\n\tdirectors\x18\x0f \x03(\t2\xe0\x02\n\x06Movies\x12;\n\x0bListByGenre\x12\x12.moviespackage.Msg\x1a\x14.moviespackage.Movie\"\x00\x30\x01\x12;\n\x0bListByActor\x12\x12.moviespackage.Msg\x1a\x14.moviespackage.Movie\"\x00\x30\x01\x12\x34\n\x06\x43reate\x12\x14.moviespackage.Movie\x1a\x12.moviespackage.Msg\"\x00\x12\x32\n\x04Read\x12\x12.moviespackage.Msg\x1a\x14.moviespackage.Movie\"\x00\x12>\n\x06Update\x12\x16.moviespackage.Update_\x1a\x16.moviespackage.Update_\"\x00(\x01\x30\x01\x12\x32\n\x06\x44\x65lete\x12\x12.moviespackage.Msg\x1a\x12.moviespackage.Msg\"\x00\x62\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'movies_pb2', globals())
 if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
-  _MSG._serialized_start=31
-  _MSG._serialized_end=53
-  _MOVIE._serialized_start=56
-  _MOVIE._serialized_end=302
-  _MOVIESLIST._serialized_start=304
-  _MOVIESLIST._serialized_end=354
-  _MOVIES._serialized_start=357
-  _MOVIES._serialized_end=645
+  _UPDATE_._serialized_start=31
+  _UPDATE_._serialized_end=120
+  _MSG._serialized_start=122
+  _MSG._serialized_end=144
+  _MOVIE._serialized_start=147
+  _MOVIE._serialized_end=393
+  _MOVIES._serialized_start=396
+  _MOVIES._serialized_end=748
 # @@protoc_insertion_point(module_scope)

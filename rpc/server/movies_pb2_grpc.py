@@ -34,6 +34,11 @@ class MoviesStub(object):
                 request_serializer=movies__pb2.Msg.SerializeToString,
                 response_deserializer=movies__pb2.Movie.FromString,
                 )
+        self.Update = channel.stream_stream(
+                '/moviespackage.Movies/Update',
+                request_serializer=movies__pb2.Update_.SerializeToString,
+                response_deserializer=movies__pb2.Update_.FromString,
+                )
         self.Delete = channel.unary_unary(
                 '/moviespackage.Movies/Delete',
                 request_serializer=movies__pb2.Msg.SerializeToString,
@@ -68,9 +73,14 @@ class MoviesServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def Update(self, request_iterator, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def Delete(self, request, context):
-        """rpc Update(????) returns (Msg) {};
-        """
+        """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -97,6 +107,11 @@ def add_MoviesServicer_to_server(servicer, server):
                     servicer.Read,
                     request_deserializer=movies__pb2.Msg.FromString,
                     response_serializer=movies__pb2.Movie.SerializeToString,
+            ),
+            'Update': grpc.stream_stream_rpc_method_handler(
+                    servicer.Update,
+                    request_deserializer=movies__pb2.Update_.FromString,
+                    response_serializer=movies__pb2.Update_.SerializeToString,
             ),
             'Delete': grpc.unary_unary_rpc_method_handler(
                     servicer.Delete,
@@ -178,6 +193,23 @@ class Movies(object):
         return grpc.experimental.unary_unary(request, target, '/moviespackage.Movies/Read',
             movies__pb2.Msg.SerializeToString,
             movies__pb2.Movie.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def Update(request_iterator,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.stream_stream(request_iterator, target, '/moviespackage.Movies/Update',
+            movies__pb2.Update_.SerializeToString,
+            movies__pb2.Update_.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

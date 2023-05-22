@@ -17,7 +17,7 @@ async function handleRead(stub, movieName){
             if (error) reject(error);
             
             //Tratamento da funcao
-            console.log('success =>>>', Movie)
+            console.log(Movie)
             
             //dentro da promise, resolve() = return
             resolve()
@@ -34,7 +34,43 @@ async function handleDelete(stub, movieId){
             if (error) reject(error);
             
             //Tratamento da funcao
-            console.log('success =>>>', message.message)
+            console.log(message.message)
+            
+            //dentro da promise, resolve() = return
+            resolve()
+        })
+    })
+}
+
+async function handleCreate(stub){
+    const defaultMovie = {
+        'plot': 'N/A',
+        'genres': ['N/A'],
+        'runtime': -1,
+        'rated': 'N/A',
+        'cast': [],
+        'poster': 'N/A',
+        'title': 'N/A',
+        'fullplot': "N/A",
+        'year': -1,
+        'type': 'N/A',
+        'writers': [],
+        'countries': [],
+        'languages': [],
+        'directors': [],
+    }
+    
+    const movie = editMovie(defaultMovie)
+
+    await new Promise((resolve, reject) => {
+        // **** comandos do grpc sempre dentro da promise **** 
+
+        //chama funcao delete do stub, com Msg de parametro e callback
+        stub.Create(movie, (error, message) => {
+            if (error) reject(error);
+            
+            //Tratamento da funcao
+            console.log(message.message)
             
             //dentro da promise, resolve() = return
             resolve()
@@ -67,41 +103,6 @@ async function handleListByActor(stub, nameActor){
     })
 };
 
-async function handleCreate(stub){
-    const defaultMovie = {
-        'plot': 'N/A',
-        'genres': ['N/A'],
-        'runtime': -1,
-        'rated': 'N/A',
-        'cast': [],
-        'poster': 'N/A',
-        'title': 'N/A',
-        'fullplot': "N/A",
-        'year': -1,
-        'type': 'N/A',
-        'writers': [],
-        'countries': [],
-        'languages': [],
-        'directors': [],
-    }
-    
-    const movie = editMovie(defaultMovie)
-    await new Promise((resolve, reject) => {
-        // **** comandos do grpc sempre dentro da promise **** 
-
-        //chama funcao delete do stub, com Msg de parametro e callback
-        stub.Create(movie, (error, message) => {
-            if (error) reject(error);
-            
-            //Tratamento da funcao
-            console.log('success =>>>', message.message)
-            
-            //dentro da promise, resolve() = return
-            resolve()
-        })
-    })
-}
-
 async function handleListByGenre(stub, nameGenre){    
     await new Promise((resolve, reject) => {
         //chama funcao read do stub, com Msg de parametro
@@ -126,8 +127,48 @@ async function handleListByGenre(stub, nameGenre){
     })
 };
 
+// ~~~~~ Update (stream duplex) ~~~~
+async function handleUpdate(stub, movieId){    
+    await new Promise((resolve, reject) => {
+        // ORDERS
+        // 0 -> cliente pede filme pro servidor
+        // 1 -> servidor manda filme pro cliente
+        // 2 -> cliente manda filme editado pro servidor
+        // 3 -> servidor retorna com o resultado do update
+
+        //chama funcao read do stub
+        var call = stub.Update();
+
+        //envia o id do filme
+        call.write({'order': 0, 'arg': movieId})
+
+        //fica recebendo em stream
+        call.on('data', (upd) => {
+            if (upd.order === 1){
+                console.log(`============= Editando  "${upd.movie.title}" =============`)
+                const movie = editMovie(upd.movie)
+                call.write({'order': 2, 'movie': movie});
+            } else {
+                if (upd.order === 3) console.log(upd.arg)
+                else console.log('Failure')
+                call.end();
+            }
+        });
+        
+        //é chamado quando o servidor termina de mandar os movie
+        call.on('end', () => {
+            resolve()
+        });
+        
+        //em caso de erro
+        call.on('error', (e) => {
+            reject(e)
+        });
+    })
+}
 
 
+// ================= HELPERS =======================
 const editMovie = (movie) => {
     var input = null;
   
@@ -190,32 +231,33 @@ const editMovie = (movie) => {
     return movie
   }
 
-  const getInputs = async (stub) => {
-    while (true) {
-      const input = prompt('> ');
-      [cmd, arg] = input.split(' ')
-  
-      if (cmd === 'ListByActor') {
-        await handleListByActor(stub, arg)
-      } else if (cmd === 'ListByGenre') {
-        await handleListByGenre(stub, arg)
-      } else if (cmd === 'Read') {
-        await handleRead(stub, arg)
-      } else if (cmd === 'Create') {
-        await handleCreate(stub)
-    //   } else if (cmd === 'Update') {
-    //     await handleUpdate(stub, arg)
-      } else if (cmd === 'Delete') {
-        await handleDelete(stub, arg)
-      }
-      else if (input === 'close') {
-        break;
-      } else {
-        console.log('Comando inexistente.')
-      }
-    }
-  }
 // ================= CLIENT ORCHESTRA =======================
+
+const getInputs = async (stub) => {
+    while (true) {
+        const input = prompt('> ');
+        [cmd, arg] = input.split(' ')
+    
+        if (cmd === 'ListByActor') {
+            await handleListByActor(stub, arg)
+        } else if (cmd === 'ListByGenre') {
+            await handleListByGenre(stub, arg)
+        } else if (cmd === 'Read') {
+            await handleRead(stub, arg)
+        } else if (cmd === 'Create') {
+            await handleCreate(stub)
+          } else if (cmd === 'Update') {
+            await handleUpdate(stub, arg)
+        } else if (cmd === 'Delete') {
+            await handleDelete(stub, arg)
+        }
+        else if (input === 'close') {
+            break;
+        } else {
+            console.log('Comando inexistente.')
+        }
+    }
+}
 
 const main = async () => {
     //stub = client

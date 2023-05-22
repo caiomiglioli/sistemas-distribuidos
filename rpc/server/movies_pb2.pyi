@@ -39,14 +39,18 @@ class Movie(_message.Message):
     year: int
     def __init__(self, id: _Optional[str] = ..., plot: _Optional[str] = ..., genres: _Optional[_Iterable[str]] = ..., runtime: _Optional[int] = ..., rated: _Optional[str] = ..., cast: _Optional[_Iterable[str]] = ..., poster: _Optional[str] = ..., title: _Optional[str] = ..., fullplot: _Optional[str] = ..., year: _Optional[int] = ..., type: _Optional[str] = ..., writers: _Optional[_Iterable[str]] = ..., countries: _Optional[_Iterable[str]] = ..., languages: _Optional[_Iterable[str]] = ..., directors: _Optional[_Iterable[str]] = ...) -> None: ...
 
-class MoviesList(_message.Message):
-    __slots__ = ["movies"]
-    MOVIES_FIELD_NUMBER: _ClassVar[int]
-    movies: _containers.RepeatedCompositeFieldContainer[Movie]
-    def __init__(self, movies: _Optional[_Iterable[_Union[Movie, _Mapping]]] = ...) -> None: ...
-
 class Msg(_message.Message):
     __slots__ = ["message"]
     MESSAGE_FIELD_NUMBER: _ClassVar[int]
     message: str
     def __init__(self, message: _Optional[str] = ...) -> None: ...
+
+class Update_(_message.Message):
+    __slots__ = ["arg", "movie", "order"]
+    ARG_FIELD_NUMBER: _ClassVar[int]
+    MOVIE_FIELD_NUMBER: _ClassVar[int]
+    ORDER_FIELD_NUMBER: _ClassVar[int]
+    arg: str
+    movie: Movie
+    order: int
+    def __init__(self, order: _Optional[int] = ..., arg: _Optional[str] = ..., movie: _Optional[_Union[Movie, _Mapping]] = ...) -> None: ...

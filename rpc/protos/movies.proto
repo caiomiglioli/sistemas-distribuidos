@@ -11,8 +11,17 @@ service Movies{
     rpc ListByActor(Msg) returns (stream Movie) {};
     rpc Create(Movie) returns (Msg) {};
     rpc Read(Msg) returns (Movie) {};
-    // rpc Update(????) returns (Msg) {};
+    rpc Update(stream Update_) returns (stream Update_) {};
     rpc Delete(Msg) returns (Msg) {};
+}
+
+message Update_ {
+    int32 order = 1;
+
+    oneof content {
+        string arg = 2;
+        Movie movie = 3;
+    }
 }
 
 message Msg {
@@ -35,8 +44,4 @@ message Movie {
     repeated string countries = 13;
     repeated string languages = 14;
     repeated string directors = 15;
-}
-
-message MoviesList {
-    repeated Movie movies = 1;
 }

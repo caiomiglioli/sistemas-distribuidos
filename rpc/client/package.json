@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "@grpc/grpc-js": "^1.8.14",
-    "grpc-promise": "^1.4.0"
+    "grpc-promise": "^1.4.0",
+    "prompt-sync": "^4.2.0"
   }
 }
