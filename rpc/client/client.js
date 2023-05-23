@@ -1,3 +1,16 @@
+/*
+Este código implementa a parte cliente de um programa cliente/servidor
+de gerenciamento de uma base de dados de filmes, onde a comunicação
+ocorre via RPC e Protobuf. É utilizado o gRPC como framework.
+
+Autores:
+  - Caio Miglioli @caiomiglioli
+  - Ryan Lazaretti @ryanramos01
+
+Data de Criação: 19 de Maio de 2023
+Ultima alteração: 23 de Maio de 2023
+*/
+
 const grpc = require('@grpc/grpc-js')
 var protoLoader = require('@grpc/proto-loader');
 const prompt = require('prompt-sync')();
@@ -9,6 +22,9 @@ const prompt = require('prompt-sync')();
 // ================= CHAMADAS =======================
 
 async function handleRead(stub, movieName){
+    // É criado uma promise para que o cliente funcione de maneira sincrona
+    // A promise é retornada somente após o callback do stub, assim travando
+    // o cliente nessa função até que tudo se resolva.
     await new Promise((resolve, reject) => {
         // **** comandos do grpc sempre dentro da promise **** 
 

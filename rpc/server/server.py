@@ -1,3 +1,16 @@
+"""
+Este código implementa a parte servidor de um programa cliente/servidor
+de gerenciamento de uma base de dados de filmes, onde a comunicação
+ocorre via RPC e Protobuf. É utilizado o gRPC como framework.
+
+Autores:
+  - Caio Miglioli @caiomiglioli
+  - Ryan Lazaretti @ryanramos01
+
+Data de Criação: 15 de Maio de 2023
+Ultima alteração: 23 de Maio de 2023
+"""
+
 #utils
 from concurrent import futures
 
@@ -25,7 +38,6 @@ class MoviesServicer(movies_pb2_grpc.MoviesServicer):
             yield movieToProtobuf(movie)
     
     def Create(self, request, context):
-        print(request)
         result = self.db.create(MessageToJson(request))
         return movies_pb2.Msg(
             message = 'Success' if result else 'Failure'
@@ -38,6 +50,14 @@ class MoviesServicer(movies_pb2_grpc.MoviesServicer):
         return movieToProtobuf(movie)
 
     def Update(self, request_iterator, context):
+        """
+        Funciona em stream duplex.
+        // ORDERS
+        // 0 -> cliente pede filme pro servidor
+        // 1 -> servidor manda filme pro cliente
+        // 2 -> cliente manda filme editado pro servidor
+        // 3 -> servidor retorna com o resultado do update
+        """
         movieId = None
         for request in request_iterator:
             if request.order == 0:
