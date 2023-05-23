@@ -42,6 +42,7 @@ async function handleDelete(stub, movieId){
     })
 }
 
+
 async function handleCreate(stub){
     const defaultMovie = {
         'plot': 'N/A',
@@ -103,6 +104,7 @@ async function handleListByActor(stub, nameActor){
     })
 };
 
+// ~~~~~ ListByGenre (stream do servidor) ~~~~
 async function handleListByGenre(stub, nameGenre){    
     await new Promise((resolve, reject) => {
         //chama funcao read do stub, com Msg de parametro
@@ -169,6 +171,7 @@ async function handleUpdate(stub, movieId){
 
 
 // ================= HELPERS =======================
+//função auxiliar para criação e update de um movie passado.
 const editMovie = (movie) => {
     var input = null;
   
@@ -231,34 +234,65 @@ const editMovie = (movie) => {
     return movie
   }
 
+//função que valida se o argumento digitado é válido
+const thereIsArgument = (arg) =>{
+    const size = arg.length
+    if (size < 1) return false
+    return true
+  }
+//função que valida se o comando digitado é valido
+const validCommand = (cmd) =>{
+    if (cmd != 'ListByActor' && cmd != 'ListByGenre' && cmd != 'Create' && cmd != 'Read' && cmd != 'Update' && cmd != 'Delete' && cmd != 'Close')
+        return false
+    return true
+}
+
+//outputs iniciais
+const initialOutputs = () =>{
+    console.log('=================Cliente RPC=================')
+    console.log('Lista de comandos:')
+    console.log('ListByActor (arg)')
+    console.log('ListByGenre (arg)')
+    console.log('Create')
+    console.log('Read (arg)')
+    console.log('Update (arg)')
+    console.log('Delete (arg)')
+    console.log('Close')
+    console.log('==============================================')
+}
+
 // ================= CLIENT ORCHESTRA =======================
 
 const getInputs = async (stub) => {
+    initialOutputs()
     while (true) {
         const input = prompt('> ');
         [cmd, arg] = input.split(' ')
-    
-        if (cmd === 'ListByActor') {
-            await handleListByActor(stub, arg)
-        } else if (cmd === 'ListByGenre') {
-            await handleListByGenre(stub, arg)
-        } else if (cmd === 'Read') {
-            await handleRead(stub, arg)
-        } else if (cmd === 'Create') {
-            await handleCreate(stub)
-          } else if (cmd === 'Update') {
-            await handleUpdate(stub, arg)
-        } else if (cmd === 'Delete') {
-            await handleDelete(stub, arg)
-        }
-        else if (input === 'close') {
-            break;
-        } else {
-            console.log('Comando inexistente.')
-        }
+        
+        if (validCommand(cmd)){
+            if (cmd === 'Create') await handleCreate(stub)
+            if (thereIsArgument(arg)){
+                if (cmd === 'ListByActor') {
+                    await handleListByActor(stub, arg)
+                } else if (cmd === 'ListByGenre') {
+                    await handleListByGenre(stub, arg)
+                } else if (cmd === 'Read') {
+                    await handleRead(stub, arg)
+                } else if (cmd === 'Update') {
+                    await handleUpdate(stub, arg)
+                } else if (cmd === 'Delete') {
+                    await handleDelete(stub, arg)
+                }
+                else if (input === 'Close') {
+                    break;
+                }
+            } else console.log('Argumento passado é inválido.')
+        }else console.log('Comando inexistente.')
     }
 }
 
+
+//main
 const main = async () => {
     //stub = client
     var packageDefinition = protoLoader.loadSync('../protos/movies.proto');
