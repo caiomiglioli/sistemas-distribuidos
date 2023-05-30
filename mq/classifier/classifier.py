@@ -1,5 +1,6 @@
 import pika
 import json
+import spacy
 
 class Classifier:
     def __init__(self):
@@ -13,6 +14,19 @@ class Classifier:
         self.clients.queue_declare(queue='culture')
         self.clients.queue_declare(queue='sports')
         self.clients.queue_declare(queue='news')
+        self.clients.queue_declare(queue='tech')
+
+        #keywords
+        self.keywords = {
+            'culture': ['music', 'gala', 'artist', 'song', 'movie', 'cinema', 'critics', 'oscar', 'bafta', 'play', 'listen', 'miss', 'food', 'artistoftheyear', 'spectre', 'album', 'tv', 'tvs', 'songs', 'movies', 'abc', 'season', 'series'],
+            'sports': ['nfl', 'nba', 'yards', 'points', 'goals','goal', 'football', 'voleyball', 'basketball', 'win', 'tennis', 'games', 'match', 'team', 'season', 'stats', 'playing', 'racing'],
+            'news': ['video', 'politics', 'president', 'weather', 'channel', 'updates', 'watch', 'school', 'money', 'business', 'build', 'dead', 'cancer', 'latest', 'media', 'american', 'debates', 'debate', 'nation', 'democrat', 'republican'],
+            'tech': ['iphone', 'samsung', 'android', 'windows', 'ios', 'bluetooth', 'wifi', 'amazon', 'videogame', 'playstation', 'xbox', 'pc', 'future', 'space','playing', 'app', 'facebook']
+        }
+
+        #extra
+        self.nlp = spacy.load("en_core_web_sm")
+    #end init
 
 
     def start(self):
@@ -22,15 +36,39 @@ class Classifier:
 
     def classify(self, ch, method_frame, header_frame, body):
         tweet = json.loads(body)
-        print(tweet)
-        #tweet['tweet']
-        #tweet['author']
-        #tweet['at']
 
-        # # ack dentro do classify
-        # channel.basic_ack(delivery_tag=method_frame.delivery_tag)
+        #pega os tokens pra comparar com as keywords
+        tokens = []
+        for token in self.nlp(tweet['tweet'].lower()):
+            if not token.is_stop:
+                tokens.append(token.text)
+
+        #conta a quantidade de keywords em cada topico
+        tokens_counter = dict()
+        tokens_found = 0
+
+        for word in self.keywords.keys():
+            for token in tokens:
+                if token in self.keywords[word]:
+                    if not tokens_counter.get(word):
+                        tokens_counter[word] = 0
+                    tokens_counter[word] += 1
+                    tokens_found += 1
+
+        #se nao tiver keyword, entao abandona
+        if tokens_found == 0:
+            return print('NO TOPIC: ' + tweet['tweet'])
+        
+        #classifica
+        max, topic = 0, None
+        for key, value in tokens_counter.items():
+            if value > max:
+                topic = key
+
+        #send
+        self.clients.basic_publish(exchange='', routing_key=topic, body=json.dumps(tweet))
+        # print(topic.upper() + ': ' + tweet['tweet'] + '\n')
     #end classify
-
 #end class
 
 if __name__ == '__main__':

@@ -17,7 +17,7 @@ def publishFromCSV(filename, channel, interval):
         header = None
 
         for i, tw in enumerate(_reader):
-            # if i > 10: break #enviar somente 1 tweet xd
+            # if i > 1: break #enviar somente 1 tweet xd
             
             if i == 0:
                 header = tw
@@ -31,14 +31,16 @@ def publishFromCSV(filename, channel, interval):
 
 
 def publish(channel, tw):
-    user = literal_eval(tw["tweet_user"])
-
+    # user = literal_eval(tw["tweet_user"])
+   
     body = {
-        "tweet": tw['tweet_full_text'],
-        "author": user["name"],
-        "at": user['screen_name']
+        "tweet": tw['text'],
+        "at": tw['name'],
+        # "tweet": tw['tweet_full_text'],
+        # "author": user["name"],
+        # "at": user['screen_name']
     }
-    
+
     channel.basic_publish(exchange='', routing_key='raw-tweets', body=dumps(body))
     print(f'tweet by @{body["at"]} published')
 #end publish
@@ -52,7 +54,7 @@ def main():
     print('raw-tweets queue started')
 
     try:
-        publishFromCSV('tweets.csv', channel, .05)
+        publishFromCSV('tweet_data.csv', channel, 1)
     finally:
         print('connection closed')
         connection.close()
