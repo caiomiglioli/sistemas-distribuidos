@@ -1,6 +1,7 @@
 import pika
 import json
 import spacy
+import time
 
 class Classifier:
     def __init__(self):
@@ -66,6 +67,8 @@ class Classifier:
                 topic = key
 
         #send
+        tweet['date'] = time.time()
+        print(tweet['date'])
         self.clients.basic_publish(exchange='', routing_key=topic, body=json.dumps(tweet))
         # print(topic.upper() + ': ' + tweet['tweet'] + '\n')
     #end classify
