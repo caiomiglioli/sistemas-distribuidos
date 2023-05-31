@@ -1,10 +1,26 @@
+"""
+Este código implementa a parte Coletora de um programa de fila de mensagens que coleta,
+classifica e distribui tweets de acordo com tópicos selecionados pelo cliente.
+
+Autores:
+  - Caio Miglioli @caiomiglioli
+  - Ryan Lazaretti @ryanramos01
+
+Data de Criação: 30 de Maio de 2023
+Ultima alteração: 31 de Maio de 2023
+"""
+
 import pika
 from json import dumps
 from csv import reader
-from ast import literal_eval
 from time import sleep
 
 def tw2dict(header, tw):
+    """
+    Recebe um vetor header contendo o nome de cada coluna do csv
+    Recebe um vetor tw contendo os valores de uma coluna qualquer do csv
+    Junta ambos em um dicionário chave-valor e retorna
+    """
     res = dict()
     for i, head in enumerate(header):
         res[head] = tw[i]
@@ -12,6 +28,9 @@ def tw2dict(header, tw):
 
 
 def publishFromCSV(filename, channel, interval):
+    """
+    Função que lê cada linha do CSV, e coordena a publicação chamando as funções necessárias (tw2dict e publish)
+    """
     with open(filename, newline='') as tws:
         _reader = reader(tws)
         header = None
@@ -31,6 +50,10 @@ def publishFromCSV(filename, channel, interval):
 
 
 def publish(channel, tw):
+    """
+    Recebe um channel de MQ e um dicionario contendo as informações do tweet,
+    retira somente os valores importantes e publica na fila de mensagens para o classificador
+    """
     # user = literal_eval(tw["tweet_user"])
    
     body = {
@@ -47,14 +70,18 @@ def publish(channel, tw):
 
 
 def main():
+    # cria a conexão com o RabbitMQ
     connection = pika.BlockingConnection(pika.ConnectionParameters('localhost', '5672'))
     print('connection started')
+
+    # declara a fila
     channel = connection.channel()
     channel.queue_declare(queue='raw-tweets')
     print('raw-tweets queue started')
 
+    # envia os tweets para a fila
     try:
-        publishFromCSV('tweet_data.csv', channel, 1)
+        publishFromCSV('tweet_data.csv', channel, .5)
     finally:
         print('connection closed')
         connection.close()

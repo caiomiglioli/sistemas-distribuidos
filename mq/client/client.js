@@ -1,3 +1,15 @@
+/*
+Este código implementa a parte Cliente de um programa de fila de mensagens que coleta,
+classifica e distribui tweets de acordo com tópicos selecionados pelo cliente.
+
+Autores:
+  - Ryan Lazaretti @ryanramos01
+  - Caio Miglioli @caiomiglioli
+
+Data de Criação: 30 de Maio de 2023
+Ultima alteração: 30 de Maio de 2023
+*/
+
 const amqp = require('amqplib/callback_api');
 const prompt = require('prompt-sync')();
 
@@ -16,7 +28,7 @@ amqp.connect('amqp://localhost', function(error0, connection) {
         }
 
         // Usando o prompt para obter a entrada do usuário do terminal
-        const input = prompt('> ');
+        const input = prompt('Which topics to follow? > ');
 
         // Dividindo a entrada do usuário em várias filas
         const queues = input.split(' ');

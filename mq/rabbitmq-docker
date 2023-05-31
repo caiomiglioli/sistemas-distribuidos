@@ -3,10 +3,14 @@ sudo apt update
 sudo apt install docker docker-compose
 docker run --name rabbitmq_sd -p 5672:5672 rabbitmq
 
+#pegar o container-id do container
+docker ps -a
+
 #start
-docker ps -a #pegar o codigo do container
 docker start <container-id>
 
+#stop
+docker stop <container-id>
+
 #delete
-docker ps -a #pegar o codigo do container
 docker rm <container-id>
