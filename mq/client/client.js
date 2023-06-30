@@ -21,7 +21,7 @@ amqp.connect('amqp://localhost', function(error0, connection) {
     }
     
     // Criando um canal de comunicação após a conexão ser estabelecida
-    connection.createChannel(function(error1, channel) {
+    connection.createChannel(async function(error1, channel) {
         // Se houver algum erro na criação do canal, o erro será lançado
         if (error1) {
             throw error1;
@@ -34,16 +34,35 @@ amqp.connect('amqp://localhost', function(error0, connection) {
         const queues = input.split(' ');
         // Iterando sobre todas as filas
         for(let i = 0; i < queues.length; i++){
+
+
+
             // Garantindo que a fila esteja disponível para enviar mensagens
-            channel.assertQueue(queues[i], {
-                durable: false
-            });
+            // channel.assertQueue(queues[i], {
+            //     durable: false
+            // });
+            
+
+            const topic = queues[i]
+
+            // Declara o exchange
+            channel.assertExchange('classified-tweets', 'topic', { durable: false });
+
+            // Cria uma fila exclusiva
+            const result = channel.assertQueue('', { exclusive: true });
+            const queue = result.queue;
+
+            // Faz o bind da fila com o tópico
+            const routingKey = topic;
+            channel.bindQueue(queue, 'classified-tweets', routingKey);
+
+
 
             // Logando uma mensagem indicando que o cliente está esperando por mensagens
             console.log(" [*] Esperando mensagens de %s. Para sair pressione CTRL+C", queues[i]);
 
             // Consumindo mensagens da fila especificada. Quando uma mensagem é recebida, ela é logada no console
-            channel.consume(queues[i], function(msg) {
+            channel.consume(queue, (msg) => {
               // Converte a string JSON recebida em um objeto JavaScript usando JSON.parse()
               let msgObj = JSON.parse(msg.content.toString());
 

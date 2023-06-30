@@ -1,3 +1,15 @@
 2023-04-11 20:56:59,888: INFO: cliente ('127.0.0.1', 55496) conectado
 2023-04-11 20:57:10,616: INFO: Cliente ('127.0.0.1', 55496) listou os arquivos do servidor.
 2023-04-11 20:57:17,051: INFO: cliente ('127.0.0.1', 55496) desconectado
+2023-06-21 16:44:32,646: INFO: cliente ('127.0.0.1', 41172) conectado
+2023-06-21 16:45:01,217: INFO: Cliente ('127.0.0.1', 41172) listou os arquivos do servidor.
+2023-06-21 16:45:15,291: INFO: Cliente ('127.0.0.1', 41172) excluiu o arquivo x.txt.
+2023-06-21 16:45:19,289: INFO: Cliente ('127.0.0.1', 41172) listou os arquivos do servidor.
+2023-06-21 16:45:24,928: ERROR: Cliente ('127.0.0.1', 41172) falhou ao excluir o arquivo XX.t.
+2023-06-21 16:45:47,926: INFO: Cliente ('127.0.0.1', 41172) fez o download do arquivo foto.jpg.
+2023-06-21 16:45:47,960: INFO: cliente ('127.0.0.1', 41172) desconectado
+2023-06-21 16:46:02,327: INFO: cliente ('127.0.0.1', 55158) conectado
+2023-06-21 16:46:07,334: INFO: Cliente ('127.0.0.1', 55158) listou os arquivos do servidor.
+2023-06-21 16:46:12,977: INFO: Cliente ('127.0.0.1', 55158) fez o download do arquivo foto.jpg.
+2023-06-21 16:47:03,339: INFO: Cliente ('127.0.0.1', 55158) fez o upload do arquivo camp.txt.
+2023-06-21 16:53:41,883: INFO: cliente ('127.0.0.1', 55158) desconectado

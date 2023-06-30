@@ -68,12 +68,13 @@ def handleUpload(server, client, request):
     with open('./files/' + filename, "wb") as f:
         for i in range(packets):
             [dgram, c] = server.recvfrom(1028)
-            if c != client:       
+            if c != client:
                 server.sendto(int(0).to_bytes(1, 'big', signed=False), c)
                 continue
             
             index = int.from_bytes(dgram[0:4], "big")
             content = dgram[4:]
+            print(f'pacote recebido ({index}/{packets})')
 
             try:
                 f.seek(index*1024)

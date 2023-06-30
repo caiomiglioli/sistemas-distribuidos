@@ -24,6 +24,8 @@ class Classifier:
 
         #clients
         self.clients = self.connection.channel()
+
+        self.clients.exchange_declare(exchange='classified-tweets', exchange_type='topic')
         self.clients.queue_declare(queue='culture')
         self.clients.queue_declare(queue='sports')
         self.clients.queue_declare(queue='news')
@@ -89,7 +91,7 @@ class Classifier:
 
         #send
         tweet['date'] = time.time()
-        self.clients.basic_publish(exchange='', routing_key=topic, body=json.dumps(tweet))
+        self.clients.basic_publish(exchange='classified-tweets', routing_key=topic, body=json.dumps(tweet))
         # print(topic.upper() + ': ' + tweet['tweet'] + '\n')
     #end classify
 #end class
