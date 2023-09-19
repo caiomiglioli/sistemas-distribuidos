@@ -8,8 +8,8 @@ import json
 #from urllib.parse import quote_plus # used to escape string
 
 #load_dotenv()
-DB_USER = 'caiomiglioli'
-DB_PASSWORD = 'miglioli'
+DB_USER = 'x'
+DB_PASSWORD = 'x'
 DB_CONNECT_URL = 'sistemas-distribuidos.pcp4inu.mongodb.net/?retryWrites=true&w=majority'
 
 class MongoDBClient:
